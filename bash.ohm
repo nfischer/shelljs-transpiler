@@ -1,5 +1,4 @@
 Bash {
-
   Script = (Shebang "\n")? ScriptCode
   ScriptCode = Cmd | NullCmd
   Shebang = "#!/bin/bash"
@@ -22,7 +21,6 @@ Bash {
       | assignment semicolon NullCmd
   PipeCmd = Cmd "|" Cmd
 
-
   SimpleCmd
       = CdCmd
       | PwdCmd
@@ -32,11 +30,12 @@ Bash {
       | RmCmd
       | MvCmd
       | MkdirCmd
-      /* | TestCmd */
       | CatCmd
       | SedCmd
       | GrepCmd
       | WhichCmd
+      /* | TestCmd */
+      
       | EchoCmd
       | PushdCmd
       | PopdCmd
@@ -70,16 +69,15 @@ Bash {
   TouchCmd = "touch" options? bashword
   ExecCmd = CmdName Arglist
 
-
   CmdName = bashword
   Arglist = bashword*
   NullCmd = ""
   options = "-" letter*
-  bashword = alnum+
+  bashword = (~badchars any)+
+  badchars = allwhitespace | "|" | ";" | ">"
   assignment = id "=" alnum*
   id = alnum+
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon = ";" | "\n"
-
 }

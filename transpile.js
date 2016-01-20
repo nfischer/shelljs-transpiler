@@ -122,7 +122,7 @@ s.addOperation(
       return 'touch(' + cmd_helper(opts, args) + ')';
     },
     ExecCmd: function(firstword, args) {
-      return firstword.interval.contents + '(' + args.toJS() + ')';
+      return "exec('" + firstword.interval.contents + args.toJS() + "')";
     },
     Arglist: function(_) { // TODO: how can I turn this into a list that I can join?
       // return this.join(', '); // ??????

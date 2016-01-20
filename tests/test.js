@@ -12,8 +12,8 @@ var m;
 //
 // Invalids
 //
-m = bash.match('#!/bin/bash');
-assert.ok(m.failed());
+// m = bash.match('#!/bin/bash');
+// assert.ok(m.failed());
 m = bash.match('echo|');
 assert.ok(m.failed());
 m = bash.match('|echo|');
@@ -36,7 +36,7 @@ m = bash.match('echo ;');
 assert.ok(m.succeeded());
 m = bash.match('git status');
 assert.ok(m.succeeded());
-m = bash.match('git status\ngit add fname\ngit commit');
+m = bash.match('git status\ngit add .\ngit commit -am I love it');
 assert.ok(m.succeeded());
 
 
