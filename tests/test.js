@@ -4,7 +4,9 @@ var ohm = require('ohm-js');
 var fs = require('fs');
 require('shelljs/global');
 
-var contents = fs.readFileSync('bash.ohm');
+var ohm_file = __dirname + '/../bash.ohm';
+
+var contents = fs.readFileSync(ohm_file);
 var bash = ohm.grammar(contents);
 
 var m;
@@ -38,7 +40,10 @@ m = bash.match('git status');
 assert.ok(m.succeeded());
 m = bash.match('git status\ngit add .\ngit commit -am I love it');
 assert.ok(m.succeeded());
-
+m = bash.match('#!/bin/bash\necho foo');
+assert.ok(m.succeeded());
+m = bash.match('# this is a comment\necho foo');
+assert.ok(m.succeeded());
 
 
 
