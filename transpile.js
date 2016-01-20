@@ -21,8 +21,13 @@ function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.interval.contents)
     params.push("'" + opts.interval.contents + "'");
-  if (args && args.interval.contents)
-    params.push("'" + args.interval.contents + "'");
+  // if (args && args.interval.contents)
+  //   params.push("'" + args.interval.contents + "'");
+  if (args && args.interval.contents) {
+    args.toJS().forEach(function(word) {
+      params.push("'" + word + "'");
+    });
+  }
   return params.join(', ');
 }
 
@@ -45,7 +50,7 @@ s.addOperation(
     },
     Shebang: function(_) {
     if (this.interval.contents)
-      return '#!/usr/bin/env node\n';
+      return "#!/usr/bin/env node\nrequire('shelljs/global');\n\n";
     else
       return '';
     },
@@ -56,6 +61,9 @@ s.addOperation(
     PipeCmd: function(c1, _, c2) { return c1.toJS() + '.pipe().' + c2.toJS(); },
     SimpleCmd: function(specific_cmd) {
       return specific_cmd.toJS();
+    },
+    CmdWithComment: function(cmd, comment) {
+      return cmd.toJS() + '; ' + comment.toJS();
     },
     // SimpleCmd: function(firstword, args) {
     //   return firstword.interval.contents + '(' + args.toJS() + ')';
@@ -124,13 +132,10 @@ s.addOperation(
     ExecCmd: function(firstword, args) {
       return "exec('" + firstword.interval.contents + args.toJS() + "')";
     },
-    Arglist: function(_) { // TODO: how can I turn this into a list that I can join?
-      // return this.join(', '); // ??????
-      // for (var k in this.interval) {
-      //   console.log(k);
-      // }
+    Arglist: function(_) {
       return this.interval.contents;
     },
+    comment: function(_, msg) { return '//' + msg.interval.contents; },
     bashword: function(_) { return this.interval.contents; },
     // assignment = id "=" alnum*
     // id = alnum+
@@ -143,7 +148,7 @@ s.addOperation(
     // allwhitespace = space | "\n"
     semicolon: function(_) {
       if (this.interval.contents === ';')
-        return ';';
+        return '; ';
       else
         return ';\n';
     }

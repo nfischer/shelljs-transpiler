@@ -5,6 +5,9 @@ Bash {
   Cmd = IfCommand
       | SequenceCmd
       | PipeCmd
+      | assignment
+      | comment
+      | CmdWithComment
       | SimpleCmd
   IfCommand
       = IfTwoArm
@@ -18,8 +21,10 @@ Bash {
   spaceyfi = space+ "fi"
   SequenceCmd = Cmd semicolon Cmd
       | Cmd semicolon NullCmd
-      | assignment semicolon NullCmd
   PipeCmd = Cmd "|" Cmd
+
+  CmdWithComment
+      = SimpleCmd comment
 
   SimpleCmd
       = CdCmd
@@ -72,10 +77,11 @@ Bash {
   CmdName = bashword
   Arglist = bashword*
   NullCmd = ""
+  comment = "#" (~"\n" any)*
   options = "-" letter*
   bashword = (~badchars any)+
-  badchars = allwhitespace | "|" | ";" | ">"
-  assignment = id "=" alnum*
+  badchars = allwhitespace | "|" | ";" | ">" | "#"
+  assignment = id "=" bashword?
   id = alnum+
   space := " " | "\t"
   allwhitespace = space | "\n"
