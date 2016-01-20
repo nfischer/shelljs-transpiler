@@ -1,0 +1,85 @@
+Bash {
+
+  Script = (Shebang "\n")? ScriptCode
+  ScriptCode = Cmd | NullCmd
+  Shebang = "#!/bin/bash"
+  Cmd = IfCommand
+      | SequenceCmd
+      | PipeCmd
+      | SimpleCmd
+  IfCommand
+      = IfTwoArm
+      | IfOneArm
+  IfOneArm = IfThen SimpleCmd EndIf
+  IfTwoArm = IfThen SimpleCmd Else SimpleCmd EndIf
+  IfThen = ifwithspace SimpleCmd semicolon "then"
+  Else = semicolon "else"
+  EndIf = semicolon "fi"
+  ifwithspace = "if" space+
+  spaceyfi = space+ "fi"
+  SequenceCmd = Cmd semicolon Cmd
+      | Cmd semicolon NullCmd
+      | assignment semicolon NullCmd
+  PipeCmd = Cmd "|" Cmd
+
+
+  SimpleCmd
+      = CdCmd
+      | PwdCmd
+      | LsCmd
+      | FindCmd
+      | CpCmd
+      | RmCmd
+      | MvCmd
+      | MkdirCmd
+      /* | TestCmd */
+      | CatCmd
+      | SedCmd
+      | GrepCmd
+      | WhichCmd
+      | EchoCmd
+      | PushdCmd
+      | PopdCmd
+      | DirsCmd
+      | LnCmd
+      | ExitCmd
+      | ChmodCmd
+      | TouchCmd
+      | ExecCmd
+
+  CdCmd = "cd" bashword?
+  PwdCmd = "pwd"
+  LsCmd = "ls" options? bashword*
+  FindCmd = "find" bashword+
+  CpCmd = "cp" options? bashword+
+  RmCmd = "rm" options? bashword+
+  MvCmd = "mv" bashword+
+  MkdirCmd = "mkdir" options? bashword+
+  /* TestCmd = // TODO */
+  CatCmd = "cat" bashword+
+  SedCmd = "sed" options? bashword+
+  GrepCmd = "grep" options? bashword+
+  WhichCmd = "which" bashword
+  EchoCmd = "echo" bashword+
+  PushdCmd = "pushd" options? bashword?
+  PopdCmd = "popd" options? bashword?
+  DirsCmd = "dirs" (options | bashword)?
+  LnCmd = "ln" options? bashword bashword
+  ExitCmd = "exit" alnum+
+  ChmodCmd = "chmod" bashword bashword
+  TouchCmd = "touch" options? bashword
+  ExecCmd = CmdName Arglist
+
+
+  CmdName = bashword
+  Arglist = bashword*
+  NullCmd = ""
+  options = "-" letter*
+  bashword = alnum+
+  assignment = id "=" alnum*
+  id = alnum+
+  space := " " | "\t"
+  allwhitespace = space | "\n"
+  semicolon = ";" | "\n"
+
+}

@@ -1,0 +1,16 @@
+{
+  "name": "shelljs-transpiler",
+  "version": "0.1.0",
+  "description": "Transpile bash to shelljs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "codemirror": "^5.10.0",
+    "ohm-js": "^0.9.0",
+    "shelljs": "^0.5.3"
+  }
+}
