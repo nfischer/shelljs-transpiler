@@ -9,9 +9,11 @@ Bash {
       | comment
       | CmdWithComment
       | SimpleCmd
+
   IfCommand
       = IfTwoArm
       | IfOneArm
+
   IfOneArm = IfThen SimpleCmd EndIf
   IfTwoArm = IfThen SimpleCmd Else SimpleCmd EndIf
   IfThen = ifwithspace SimpleCmd semicolon "then"
@@ -27,17 +29,12 @@ Bash {
       = SimpleCmd comment
 
   SimpleCmd
-      = CdCmd
+      = BasicCmd
+      | CdCmd
       | PwdCmd
       | LsCmd
       | FindCmd
-      | CpCmd
-      | RmCmd
-      | MvCmd
-      | MkdirCmd
       | CatCmd
-      | SedCmd
-      | GrepCmd
       | WhichCmd
       /* | TestCmd */
       | EchoCmd
@@ -50,18 +47,13 @@ Bash {
       | TouchCmd
       | ExecCmd
 
+  BasicCmd = BasicName options? bashword+
   CdCmd = "cd" bashword?
   PwdCmd = "pwd"
-  LsCmd = "ls" options? bashword*
-  FindCmd = "find" bashword+
-  CpCmd = "cp" options? bashword+
-  RmCmd = "rm" options? bashword+
-  MvCmd = "mv" bashword+
-  MkdirCmd = "mkdir" options? bashword+
   /* TestCmd = // TODO */
-  CatCmd = "cat" bashword+
-  SedCmd = "sed" options? bashword+
-  GrepCmd = "grep" options? bashword+
+  FindCmd  = "find"  bashword+
+  LsCmd    = "ls"    options? bashword*
+  CatCmd   = "cat" bashword+
   WhichCmd = "which" bashword
   EchoCmd = "echo" bashword+
   PushdCmd = "pushd" options? bashword?
@@ -73,6 +65,14 @@ Bash {
   TouchCmd = "touch" options? bashword
   ExecCmd = CmdName Arglist
 
+  BasicName
+      = "cp"
+      | "rm"
+      | "mkdir"
+      | "mv"
+      | "sed"
+      | "grep"
+
   CmdName = bashword
   Arglist = bashword*
   NullCmd = ""
@@ -81,9 +81,14 @@ Bash {
 
   bashword
       = stringLiteral
-      | nonString
+      | reference
+      | bareWord
 
-  nonString
+  reference
+      = "$" id -- simple
+      | "${" id "}" -- smart
+
+  bareWord
       = (~badchars any)+
 
   stringLiteral = "\"" anychar* "\""
