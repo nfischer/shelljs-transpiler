@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var ohm = require('ohm-js');
+var ohm = require('ohm');
 var fs = require('fs');
 require('shelljs/global');
 var contents = fs.readFileSync('bash.ohm');
@@ -8,9 +8,7 @@ var bash = ohm.grammar(contents);
 var script = cat('input.sh');
 
 var m = bash.match(script);
-if (m.succeeded()) {
-  console.log('It works!');
-} else {
+if (m.failed()) {
   console.error('Invalid script');
   exit(1);
 }
@@ -21,8 +19,6 @@ function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.interval.contents)
     params.push("'" + opts.interval.contents + "'");
-  // if (args && args.interval.contents)
-  //   params.push("'" + args.interval.contents + "'");
   if (args && args.interval.contents) {
     args.toJS().forEach(function(word) {
       params.push("'" + word + "'");
@@ -115,9 +111,9 @@ s.addOperation(
     LnCmd: function(_, opts, src, dest) {
       var params = [];
       if (opts.interval.contents)
-        params.push(opts.interval.contents);
-      parms.push(src);
-      parms.push(dest);
+        params.push("'" + opts.interval.contents + "'");
+      params.push("'" + src.toJS() + "'");
+      params.push("'" + dest.toJS() + "'");
       return 'ln(' + params.join(', ') + ')';
     },
     ExitCmd: function(_, code) {
@@ -136,9 +132,9 @@ s.addOperation(
       return this.interval.contents;
     },
     comment: function(_, msg) { return '//' + msg.interval.contents; },
-    bashword: function(_) { return this.interval.contents; },
-    // assignment = id "=" alnum*
-    // id = alnum+
+    bashword: function(val) { return val.toJS(); },
+    stringLiteral: function(_sq, val, _eq) { return val.interval.contents; },
+    nonString: function(_) { return this.interval.contents; },
     id: function(name) {
       return this.interval.contents;
     },
@@ -155,6 +151,4 @@ s.addOperation(
   });
 var n = s(m);
 
-echo('-------------');
 console.log(n.toJS());
-echo('-------------');

@@ -40,7 +40,6 @@ Bash {
       | GrepCmd
       | WhichCmd
       /* | TestCmd */
-      
       | EchoCmd
       | PushdCmd
       | PopdCmd
@@ -79,7 +78,21 @@ Bash {
   NullCmd = ""
   comment = "#" (~"\n" any)*
   options = "-" letter*
-  bashword = (~badchars any)+
+
+  bashword
+      = stringLiteral
+      | nonString
+
+  nonString
+      = (~badchars any)+
+
+  stringLiteral = "\"" anychar* "\""
+                | "'" anychar* "'"
+
+  /* TODO make sure this works with more characters */
+  anychar = allwhitespace | alnum | "|" | ";" | ">" | "<" | "#" | "(" | ")"
+          | "*" | "&" | "^" | "%" | "@" | "!"
+
   badchars = allwhitespace | "|" | ";" | ">" | "#"
   assignment = id "=" bashword?
   id = alnum+
