@@ -7,7 +7,8 @@ require('shelljs/global');
 var contents = fs.readFileSync('bash.ohm');
 var bash = ohm.grammar(contents);
 
-var script = cat('input.sh');
+// Load in script, ensure a trailing newline
+var script = cat('input.sh').trim() + '\n';
 
 var m = bash.match(script);
 if (m.failed()) {
