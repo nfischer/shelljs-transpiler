@@ -102,7 +102,12 @@ module.exports = {
   reference_simple: function(_, id) { return id.interval.contents; },
   reference_smart: function(_ob, id, _cb) { return id.interval.contents; },
   bareWord: function(_) { return "'" + this.interval.contents + "'"; },
-  stringLiteral: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
+  stringLiteral: function(string) { return string.toJS(); },
+  singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
+  doubleString: function(_sq, val, _eq) {
+    var quote = val.interval.contents.indexOf("'") === -1 ? "'" : '"';
+  return quote + val.interval.contents + quote;
+  },
 
   id: function(name) {
     return this.interval.contents;

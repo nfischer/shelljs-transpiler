@@ -91,15 +91,14 @@ Bash {
   bareWord
       = (~badchars any)+
 
-  stringLiteral = "\"" anychar* "\""
-                | "'" anychar* "'"
+  stringLiteral
+    = singleString
+    | doubleString
 
-  /* TODO make sure this works with more characters */
-  /* anychar = allwhitespace | alnum | "|" | ";" | ">" | "<" | "#" | "(" | ")" */
-  /*         | "*" | "&" | "^" | "%" | "@" | "!" */
-  anychar = ~("\"" | "'") any
+  singleString = "'" (~"'" any)* "'"
+  doubleString = "\"" (~"\"" any)* "\""
 
-  badchars = allwhitespace | "|" | ";" | ">" | "#"
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\""
   assignment = id "=" bashword?
   id = alnum+
   space := " " | "\t"

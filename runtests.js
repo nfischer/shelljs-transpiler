@@ -80,6 +80,56 @@ m = bash.match('echo $myvar');
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(), "echo(myvar)");
 
+m = bash.match('echo ${myvar}');
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(), "echo(myvar)");
+
+m = bash.match('ls ${myvar} $othervar');
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(), "ls(myvar, othervar)");
+
+m = bash.match('ln -s ${myvar} $othervar');
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(), "ln('-s', myvar, othervar)");
+
+m = bash.match("echo 'Hello  \" world'")
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(), "echo('Hello  \" world')");
+
+m = bash.match("echo \"Hello  ' world\"")
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(), "echo(\"Hello  ' world\")");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 config.silent = false;
 echo('All tests passed!');
