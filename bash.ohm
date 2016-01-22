@@ -95,8 +95,9 @@ Bash {
                 | "'" anychar* "'"
 
   /* TODO make sure this works with more characters */
-  anychar = allwhitespace | alnum | "|" | ";" | ">" | "<" | "#" | "(" | ")"
-          | "*" | "&" | "^" | "%" | "@" | "!"
+  /* anychar = allwhitespace | alnum | "|" | ";" | ">" | "<" | "#" | "(" | ")" */
+  /*         | "*" | "&" | "^" | "%" | "@" | "!" */
+  anychar = ~("\"" | "'") any
 
   badchars = allwhitespace | "|" | ";" | ">" | "#"
   assignment = id "=" bashword?
