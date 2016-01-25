@@ -18,9 +18,9 @@ if (m.failed()) {
 
 var s = bash.semantics();
 s.addOperation(
-  'toJS',
+  'toJS(indent)',
   source2sourceSemantics);
 
 var n = s(m);
 
-console.log(n.toJS());
+console.log(n.toJS(0));
