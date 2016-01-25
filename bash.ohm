@@ -2,8 +2,8 @@ Bash {
   Script = (Shebang "\n")? ScriptCode
   ScriptCode = Cmd | NullCmd
   Shebang = "#!/bin/bash"
-  Cmd = IfCommand
-      | SequenceCmd
+  Cmd = SequenceCmd
+      | IfCommand
       | PipeCmd
       | assignment
       | comment
@@ -11,18 +11,45 @@ Bash {
       | SimpleCmd
 
   IfCommand
-      = IfTwoArm
-      | IfOneArm
+      = IfCase ElseIfThen* ElseCase? EndIf
 
-  IfOneArm = IfThen SimpleCmd EndIf
-  IfTwoArm = IfThen SimpleCmd Else SimpleCmd EndIf
-  IfThen = ifwithspace SimpleCmd semicolon "then"
-  Else = semicolon "else"
+  IfCase
+      = ifwithspace Conditional semicolon thenwithspace SimpleCmd
+  ElseIfThen
+      = semicolon elifwithspace Conditional semicolon thenwithspace SimpleCmd
+  ElseCase
+      = semicolon elsewithspace SimpleCmd
   EndIf = semicolon "fi"
-  ifwithspace = "if" space+
-  spaceyfi = space+ "fi"
-  SequenceCmd = Cmd semicolon Cmd
-      | Cmd semicolon NullCmd
+
+  Conditional
+      = "[" bashword BinaryOp bashword "]"  -- binary
+      | "[" UnaryOp bashword "]"            -- unary
+      | SimpleCmd                           -- cmd
+
+  /* Binary operators */
+  BinaryOp
+      = Equal | NotEqual | LessThan | GreaterThan | LessThanEq | GreaterThanEq
+  Equal = "==" | "=" | "-eq"
+  NotEqual = "!=" | "-ne"
+  LessThan = "-lt" | "<"
+  GreaterThan = "-gt" | ">"
+  LessThanEq = "-le" | "<="
+  GreaterThanEq (foo)
+      = "-ge" | ">="
+
+  /* Unary operators */
+  UnaryOp = "-z" | "-n" // TODO: add more unary ops, like -f, -d
+
+  ifwithspace (foo)
+      = "if" space+
+  elifwithspace = "elif" space+
+  elsewithspace = "else" space+
+  thenwithspace = "then" allwhitespace+
+
+  SequenceCmd
+      = Cmd semicolon Cmd
+      | Cmd semicolon ""
+
   PipeCmd = Cmd "|" Cmd
 
   CmdWithComment
@@ -48,22 +75,22 @@ Bash {
       | ExecCmd
 
   BasicCmd = BasicName options? bashword+
-  CdCmd = "cd" bashword?
-  PwdCmd = "pwd"
+  CdCmd    = "cd" bashword?
+  PwdCmd   = "pwd"
   /* TestCmd = // TODO */
   FindCmd  = "find"  bashword+
   LsCmd    = "ls"    options? bashword*
   CatCmd   = "cat" bashword+
   WhichCmd = "which" bashword
-  EchoCmd = "echo" bashword+
+  EchoCmd  = "echo" bashword+
   PushdCmd = "pushd" options? bashword?
-  PopdCmd = "popd" options? bashword?
-  DirsCmd = "dirs" (options | bashword)?
-  LnCmd = "ln" options? bashword bashword
-  ExitCmd = "exit" alnum+
+  PopdCmd  = "popd" options? bashword?
+  DirsCmd  = "dirs" (options | bashword)?
+  LnCmd    = "ln" options? bashword bashword
+  ExitCmd  = "exit" alnum+
   ChmodCmd = "chmod" bashword bashword
   TouchCmd = "touch" options? bashword
-  ExecCmd = CmdName Arglist
+  ExecCmd  = CmdName Arglist
 
   BasicName
       = "cp"
@@ -95,13 +122,21 @@ Bash {
     = singleString
     | doubleString
 
-  singleString = "'" (~"'" any)* "'"
-  doubleString = "\"" (~"\"" any)* "\""
+  singleString = "'" notSingleQuote* "'"
+  doubleString = "\"" notDoubleQuote* "\""
+
+  notSingleQuote
+    = (~("'" | "\\") any)
+    | "\\" any -- escape
+
+  notDoubleQuote
+    = (~("\"" | "\\") any)
+    | "\\" any -- escape
 
   badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\""
   assignment = id "=" bashword?
   id = alnum+
   space := " " | "\t"
   allwhitespace = space | "\n"
-  semicolon = ";" | "\n"
+  semicolon = (";" | "\n")+
 }

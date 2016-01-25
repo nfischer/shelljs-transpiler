@@ -25,7 +25,12 @@ var m;
 // assert.ok(m.failed());
 m = bash.match('echo|');
 assert.ok(m.failed());
+
 m = bash.match('|echo|');
+assert.ok(m.failed());
+
+// Escaped characters
+m = bash.match("echo \\'Hello  \\' world\\'")
 assert.ok(m.failed());
 
 //
@@ -96,40 +101,15 @@ m = bash.match("echo 'Hello  \" world'")
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(), "echo('Hello  \" world')");
 
+// Convert to single-quote strings & escape the single quote
 m = bash.match("echo \"Hello  ' world\"")
 assert.ok(m.succeeded());
-assert.equal(s(m).toJS(), "echo(\"Hello  ' world\")");
+assert.equal(s(m).toJS(), "echo('Hello  \\' world')");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Escaped characters
+m = bash.match("echo \"Hello  \\\" world\"")
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(), "echo('Hello  \" world')");
 
 config.silent = false;
 echo('All tests passed!');

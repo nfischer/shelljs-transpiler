@@ -12,7 +12,29 @@ function cmd_helper(opts, args) {
 
 module.exports = {
   Cmd: function(e) { return e.toJS(); },
-  // IfCommand: function(e) { return e.toJS(); },
+  IfCommand: function(ic, eit, elc, ef) { return ic.toJS() + eit.toJS()+ elc.toJS() + ef.toJS(); },
+  IfCase: function(iws, cond, _sc, _tws, cmd) {
+    return 'if (' + cond.toJS() + ') {\n' + cmd.toJS() + ';';
+  },
+  ElseIfThen: function(_sc1, eiws, cond, _sc2, _tws, cmd) {
+    return '\n} else if (' + cond.toJS() + ') {\n' + cmd.toJS();
+  },
+  ElseCase: function(_sc, ews, cmd) {
+    return '\n} else {\n' + cmd.toJS();
+  },
+  EndIf: function(_sc, _fi) {
+    return '\n}';
+  },
+  Conditional_binary: function(_ob, bw1, binop, bw2, _cb) {
+    return bw1.toJS() + ' ' + binop.toJS() + ' ' + bw2.toJS();
+  },
+  BinaryOp: function(op) { return op.toJS(); },
+  Equal: function(_) { return '==='; },
+  NotEqual: function(_) { return '!=='; },
+  LessThan: function(_) { return '<'; },
+  GreaterThan: function(_) { return '>'; },
+  LessThanEq: function(_) { return '<='; },
+  GreaterThanEq: function(_) { return '>='; },
   // IfOneArm: function(it, sc, ef) { return it.toJS() + '\n' + sc.toJS() + ef.toJS(); },
   // IfTwoArm: function(it, sc, el, sc2, ef) { return it.toJS() + '\n' + sc.toJS() + '\n' + el.toJS() + '\n' + sc2.toJS() + '\n' + ef.toJS(); },
   // IfThen: function(iw, sc, nl, _) { return 'if ' + sc.toJS() + ' (\n'; },
@@ -105,8 +127,7 @@ module.exports = {
   stringLiteral: function(string) { return string.toJS(); },
   singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
   doubleString: function(_sq, val, _eq) {
-    var quote = val.interval.contents.indexOf("'") === -1 ? "'" : '"';
-  return quote + val.interval.contents + quote;
+    return "'" + val.interval.contents.replace(/\\"/,  '"').replace(/'/, "\\'") + "'";
   },
 
   id: function(name) {
@@ -118,7 +139,7 @@ module.exports = {
     return ret;
   },
   semicolon: function(_) {
-    if (this.interval.contents === ';')
+    if (this.interval.contents.match(/^;+$/))
       return '; ';
     else
       return ';\n';
