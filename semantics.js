@@ -3,9 +3,14 @@ function cmd_helper(opts, args, indent) {
   if (opts && opts.interval.contents)
     params.push(opts.toJS(indent));
   if (args && args.interval.contents) {
-    args.toJS(indent).forEach(function(word) {
-      params.push(word);
-    });
+    var js_args = args.toJS(indent);
+    if (typeof js_args === 'string') {
+      params.push(js_args);
+    } else {
+      js_args.forEach(function(word) {
+        params.push(word);
+      });
+    }
   }
   return params.join(', ');
 }
@@ -35,7 +40,7 @@ module.exports = {
     return nl(this.args.indent) + '} else if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent) + cmd.toJS(this.args.indent+1) + ';';
   },
   ElseCase: function(_sc, ews, cmd) {
-    return nl(this.args.indent) + '} else {' + nl(this.args.indent) + cmd.toJS(this.args.indent);
+    return nl(this.args.indent) + '} else {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent) + ';';
   },
   EndIf: function(_sc, _fi) {
     return nl(this.args.indent) + '}';
@@ -98,13 +103,13 @@ module.exports = {
     return cname.interval.contents + '(' + cmd_helper(opts, args, this.args.indent) + ')';
   },
   CatCmd: function(_, args) {
-    return 'cat(' + cmd_helper(null, args) + ')';
+    return 'cat(' + cmd_helper(null, args, this.args.indent) + ')';
   },
   WhichCmd: function(_, arg) {
     return 'which(' + arg.interval.contents + ')';
   },
   EchoCmd: function(_, args) {
-    return 'echo(' + cmd_helper(null, args) + ')';
+    return 'echo(' + cmd_helper(null, args, this.args.indent) + ')';
   },
   PushdCmd: function(_, opts, args) {
     return 'pushd(' + cmd_helper(opts, args, this.args.indent) + ')';
@@ -113,7 +118,7 @@ module.exports = {
     return 'popd(' + cmd_helper(opts, args, this.args.indent) + ')';
   },
   DirsCmd: function(_, args) {
-    return 'dirs(' + cmd_helper(null, args) + ')';
+    return 'dirs(' + cmd_helper(null, args, this.args.indent) + ')';
   },
   LnCmd: function(_, opts, src, dest) {
     var params = [];
@@ -127,10 +132,10 @@ module.exports = {
     return 'exit(' + code.interval.contents + ')';
   },
   ChmodCmd: function(_, arg1, arg2) {
-    return 'touch(' + cmd_helper(arg1, arg2) + ')';
+    return 'chmod(' + cmd_helper(arg1, arg2, this.args.indent) + ')';
   },
-  TouchCmd: function(_, opts, args) {
-    return 'touch(' + cmd_helper(opts, args, this.args.indent) + ')';
+  TouchCmd: function(_, opts, arg) {
+    return 'touch(' + cmd_helper(opts, arg, this.args.indent) + ')';
   },
   ExecCmd: function(firstword, args) {
     return "exec('" + this.interval.contents + "')";

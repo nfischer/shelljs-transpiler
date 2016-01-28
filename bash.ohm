@@ -43,7 +43,7 @@ Bash {
   ifwithspace (foo)
       = "if" space+
   elifwithspace = "elif" space+
-  elsewithspace = "else" space+
+  elsewithspace = "else" allwhitespace+
   thenwithspace = "then" allwhitespace+
 
   SequenceCmd
@@ -108,6 +108,7 @@ Bash {
 
   bashword
       = stringLiteral
+      | number
       | reference
       | bareWord
 
@@ -115,8 +116,14 @@ Bash {
       = "$" id -- simple
       | "${" id "}" -- smart
 
+  number
+      = digit+
+
   bareWord
-      = (~badchars any)+
+      = (~keyword (~badchars any)+)
+
+  keyword
+      = "if" | "then" | "else" | "elif" | "fi" | "for" | "do" | "done"
 
   stringLiteral
     = singleString
