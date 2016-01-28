@@ -4,6 +4,7 @@ Bash {
   Shebang = "#!/bin/bash"
   Cmd = SequenceCmd
       | IfCommand
+      | ForCommand
       | WhileCommand
       | PipeCmd
       | assignment
@@ -26,6 +27,16 @@ Bash {
       = "[" bashword BinaryOp bashword "]"  -- binary
       | "[" UnaryOp bashword "]"            -- unary
       | SimpleCmd                           -- cmd
+
+  ForCommand
+      = ForControl Done
+
+  ForControl
+      = "for" "((" ControlStruct "))" semicolon dowithspace SimpleCmd -- c_style
+      | "for" id "in" "`" SimpleCmd "`" semicolon dowithspace SimpleCmd -- for_each
+
+  ControlStruct
+      = assignment ";" id BinaryOp bashword ";" (~")" bashword)
 
   WhileCommand
       = WhileControl Done
@@ -152,7 +163,7 @@ Bash {
     = (~("\"" | "\\") any)
     | "\\" any -- escape
 
-  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\""
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`"
   assignment = id "=" bashword?
   id = alnum+
   space := " " | "\t"

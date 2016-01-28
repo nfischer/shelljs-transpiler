@@ -50,11 +50,29 @@ module.exports = {
   EndIf: function(_sc, _fi) {
     return nl(this.args.indent) + '}';
   },
+  ForCommand: function(fc, done) {
+    return fc.toJS(this.args.indent) +
+      done.toJS(this.args.indent);
+  },
+  ForControl: function(f) { return f.toJS(this.args.indent); },
+  ForControl_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _dws, cmd) {
+    return 'for (' + ctrlstruct.toJS(0) + ') {' +
+      nl(this.args.indent + 1) + cmd.toJS(this.args.indent) + ';';
+  },
+  ControlStruct: function(assign, _sc1, id, binop, val, _sc2, update) {
+    return assign.toJS(0) + ';' + id.interval.contents + binop.toJS(0) + val.toJS(0) +
+      ';' + update.interval.contents;
+  },
+  ForControl_for_each: function(_for, id, _in, _bt1, cmd1, _bt2, _sc, _dws, cmd2) {
+    return 'for (' + 'var ' + id.interval.contents +
+      ' of ' + cmd1.toJS(0) + ') {' +
+      nl(this.args.indent + 1) + cmd2.toJS(this.args.indent) + ';';
+  },
   WhileCommand: function(wc, done) {
     return wc.toJS(this.args.indent) +
       done.toJS(this.args.indent);
   },
-  WhileControl: function(_wws, cond, _sc, dws, cmd) {
+  WhileControl: function(_wws, cond, _sc, _dws, cmd) {
     return 'while (' + cond.toJS(this.args.indent) + ') {' +
       nl(this.args.indent + 1) + cmd.toJS(this.args.indent) + ';';
   },
