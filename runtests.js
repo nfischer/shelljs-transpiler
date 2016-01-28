@@ -30,7 +30,7 @@ m = bash.match('|echo|');
 assert.ok(m.failed());
 
 // Escaped characters
-m = bash.match("echo \\'Hello  \\' world\\'")
+m = bash.match("echo \\'Hello  \\' world\\'");
 assert.ok(m.failed());
 
 //
@@ -97,19 +97,27 @@ m = bash.match('ln -s ${myvar} $othervar');
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "ln('-s', myvar, othervar)");
 
-m = bash.match("echo 'Hello  \" world'")
+m = bash.match("echo 'Hello  \" world'");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "echo('Hello  \" world')");
 
 // Convert to single-quote strings & escape the single quote
-m = bash.match("echo \"Hello  ' world\"")
+m = bash.match("echo \"Hello  ' world\"");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "echo('Hello  \\' world')");
 
 // Escaped characters
-m = bash.match("echo \"Hello  \\\" world\"")
+m = bash.match("echo \"Hello  \\\" world\"");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "echo('Hello  \" world')");
+
+m = bash.match("#!/bin/bash\nwhile [ 'foo' = 'bar' ]; do\n  echo 'hi'\ndone");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "#!/usr/bin/env node\n" +
+                            "require('shelljs/global');\n\n" +
+                            "while ('foo' === 'bar') {\n" +
+                            "  echo('hi');\n}");
+
 
 config.silent = false;
 echo('All tests passed!');

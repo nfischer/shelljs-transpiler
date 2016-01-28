@@ -4,6 +4,7 @@ Bash {
   Shebang = "#!/bin/bash"
   Cmd = SequenceCmd
       | IfCommand
+      | WhileCommand
       | PipeCmd
       | assignment
       | comment
@@ -25,6 +26,17 @@ Bash {
       = "[" bashword BinaryOp bashword "]"  -- binary
       | "[" UnaryOp bashword "]"            -- unary
       | SimpleCmd                           -- cmd
+
+  WhileCommand
+      = WhileControl Done
+
+  WhileControl
+      = whilewithspace Conditional semicolon dowithspace SimpleCmd
+
+  whilewithspace = "while" space+
+  dowithspace = "do" allwhitespace+
+
+  Done = semicolon "done"
 
   /* Binary operators */
   BinaryOp

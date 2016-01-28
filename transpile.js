@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var ohm = require('ohm');
+var ohm = require('ohm-js');
 var fs = require('fs');
 var source2sourceSemantics = require('./semantics');
 require('shelljs/global');

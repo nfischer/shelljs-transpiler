@@ -32,7 +32,12 @@ function ind(ind_count) {
 
 module.exports = {
   Cmd: function(e) { return e.toJS(this.args.indent); },
-  IfCommand: function(ic, eit, elc, ef) { return ic.toJS(this.args.indent) + eit.toJS(this.args.indent)+ elc.toJS(this.args.indent) + ef.toJS(this.args.indent); },
+  IfCommand: function(ic, eit, elc, ef) {
+    return ic.toJS(this.args.indent) +
+      eit.toJS(this.args.indent) +
+      elc.toJS(this.args.indent) +
+      ef.toJS(this.args.indent);
+  },
   IfCase: function(iws, cond, _sc, _tws, cmd) {
     return 'if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent) + cmd.toJS(this.args.indent+1) + ';';
   },
@@ -43,6 +48,17 @@ module.exports = {
     return nl(this.args.indent) + '} else {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent) + ';';
   },
   EndIf: function(_sc, _fi) {
+    return nl(this.args.indent) + '}';
+  },
+  WhileCommand: function(wc, done) {
+    return wc.toJS(this.args.indent) +
+      done.toJS(this.args.indent);
+  },
+  WhileControl: function(_wws, cond, _sc, dws, cmd) {
+    return 'while (' + cond.toJS(this.args.indent) + ') {' +
+      nl(this.args.indent + 1) + cmd.toJS(this.args.indent) + ';';
+  },
+  Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
   Conditional_binary: function(_ob, bw1, binop, bw2, _cb) {
