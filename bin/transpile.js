@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 var ohm = require('ohm-js');
 var fs = require('fs');
-var source2sourceSemantics = require('./semantics');
+var source2sourceSemantics = require('../semantics');
 require('shelljs/global');
 
 var contents = fs.readFileSync('bash.ohm');
 var bash = ohm.grammar(contents);
 
 // Load in script, ensure a trailing newline
-var script = cat('input.sh').trim() + '\n';
+var inputFile = process.argv[2];
+if (!inputFile) {
+  console.error('Usage: node transpile.js <input>');
+  process.exit(1);
+}
+var script = cat(inputFile).trim() + '\n';
 
 var m = bash.match(script);
 if (m.failed()) {

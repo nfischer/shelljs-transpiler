@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bash to Javascript Translator</title>
+<script src="node_modules/ohm-js/dist/ohm.js"></script>
+<!-- <script src="node_modules/codemirror/lib/codemirror.js" type="text/javascript"></script> -->
+<!-- <link rel="stylesheet" href="lib/codemirror-5.10/lib/codemirror.css"> -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/ohm-js" src="bash.ohm"></script>
+<script src="semantics.js"></script>
+</head>
+<body>
+<h1>Bash to ShellJS Translator</h1>
+<div>
+<textarea id="bashcode" cols="80" rows="20">
+Type something
+</textarea>
+<script>
+var bash = ohm.grammarFromScriptElement();
+var s = bash.semantics();
+s.addOperation(
+  'toJS(indent)',
+  source2sourceSemantics);
+
+var m = bash.match(script);
+if (m.failed()) {
+  console.error('Invalid script');
+  exit(1);
+}
+var n = s(m);
+
+//console.log(n.toJS(0));
+
+var x = 0;
+$('#bashcode').on('blur', function (e) {
+  //alert('working');
+  var replacementText = (x++).toString();
+  document.getElementById('jscode').innerHTML = replacementText;
+});
+</script>
+
+</div>
+<div>
+<textarea id="jscode" cols="80" rows="20">
+Type something
+</textarea>
+</div>
+</body>
+</html>

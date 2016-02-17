@@ -30,7 +30,7 @@ function ind(ind_count) {
   return ret;
 }
 
-module.exports = {
+var source2sourceSemantics = {
   Cmd: function(e) { return e.toJS(this.args.indent); },
   IfCommand: function(ic, eit, elc, ef) {
     return ic.toJS(this.args.indent) +
@@ -204,3 +204,7 @@ module.exports = {
       return ';\n';
   }
 };
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = source2sourceSemantics;
+}
