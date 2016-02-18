@@ -3,8 +3,6 @@
 <head>
 <title>Bash to ShellJS Translator</title>
 <script src="node_modules/ohm-js/dist/ohm.js"></script>
-<!-- <script src="node_modules/codemirror/lib/codemirror.js" type="text/javascript"></script> -->
-<!-- <link rel="stylesheet" href="lib/codemirror-5.10/lib/codemirror.css"> -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/ohm-js">
 Bash {
@@ -186,12 +184,14 @@ Bash {
 <body>
 <h1>Bash to ShellJS Translator</h1>
 <div>
-<textarea id="bashcode" cols="80" rows="20">
+<textarea id="bashcode" spellcheck="false" cols="80" rows="20">
 echo "Type something in this box"
 </textarea>
 <script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
+var errMessage;
+var warned = false;
 s.addOperation(
   'toJS(indent)',
   source2sourceSemantics);
@@ -199,28 +199,34 @@ s.addOperation(
 function loadTranslatedText() {
   var script = document.getElementById('bashcode').value;
   var m = bash.match(script);
-  if (m.failed()) {
-    console.error('Invalid script');
+  errMessage = m.failed() ? m.message : null;
+  warned = false;
+  if (!errMessage) {
+    var n = s(m);
+    var replacementText = n.toJS(0);
+    document.getElementById('jscode').innerHTML = replacementText;
   }
-  var n = s(m);
-  var replacementText = n.toJS(0);
-  document.getElementById('jscode').innerHTML = replacementText;
 }
-$('#bashcode').on('blur', loadTranslatedText);
+$('#bashcode').on('keyup', loadTranslatedText);
 $('document').ready(loadTranslatedText);
 var timeout;
 $('#bashcode').keypress(function() {
     if(timeout) {
-        clearTimeout(timeout);
-        timeout = null;
+      clearTimeout(timeout);
+      timeout = null;
     }
-    timeout = setTimeout(loadTranslatedText, 5000);
+    timeout = setTimeout(function() {
+      if (errMessage) {
+        console.error(errMessage);
+        warned = true;
+      }
+    }, 3000);
 });
 </script>
 
 </div>
 <div>
-<textarea id="jscode" cols="80" rows="20">
+<textarea id="jscode" spellcheck="false" cols="80" rows="20">
 </textarea>
 </div>
 </body>
