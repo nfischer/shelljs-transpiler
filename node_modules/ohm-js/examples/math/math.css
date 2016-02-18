@@ -1,0 +1,240 @@
+body {
+  font-family: Monaco, "Lucida Console", monospace;
+  font-size: 14pt;
+  padding: 10pt;
+}
+
+#input {
+  display: block;
+  background: azure;
+  outline: none;
+  border: 1px solid rgba(0, 0, 255, .2);
+  padding: 8pt;
+  box-shadow: 2px 2px 16px 0px rgba(0, 0, 0, .5);
+  font-family: Monaco, "Lucida Console", monospace;
+  font-size: 14pt;
+}
+
+#input::-webkit-input-placeholder {
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+}
+
+#input::-moz-placeholder {
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+}
+
+#input.error {
+  border: 1px solid rgba(255, 0, 0, .3);
+}
+
+#errorDiv {
+  display: block;
+  color: maroon;
+  margin-top: -4pt;
+  padding: 0 0 0 8pt;
+  visibility: hidden;
+  opacity: 0;
+}
+
+#errorDiv.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s 2s, opacity .25s 2s linear;
+}
+
+wrapperWrapper {
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+wrapper {
+  width: 800px;
+  position: absolute;
+}
+
+#spaces {
+  display: inline-block;
+  white-space: pre;
+}
+
+#error {
+  margin: 10px -5px;
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+  display: inline-block;
+  position: relative;
+  z-index: 2000;
+  bottom: 8pt;
+  right: 8pt;
+  padding: 4pt;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 2px 2px 10px 0px #ccc;
+  background: #FCF68B;
+  color: #928F63;
+}
+
+#error::after, #error::before {
+  bottom: 100%;
+  left: 20px;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+#error::after {
+  border-color: #FCF68B00;
+  border-bottom-color: #FCF68B;
+  border-width: 7px;
+  margin-left: -7px;
+}
+
+#error::before {
+  border-color: #ccc0;
+  border-bottom-color: #ccc;
+  border-width: 8px;
+  margin-left: -8px;
+}
+
+#error label {
+  display: block;
+  margin-bottom: 4pt;
+  font-weight: bold;
+}
+
+#error description {
+  color: maroon;
+  font-weight: bold;
+}
+
+#error light {
+  opacity: 0.5;
+}
+
+#error literal {
+  white-space: nowrap;
+}
+
+#error code {
+  opacity: 1;
+  color: maroon;
+  font-family: Monaco, "Lucida Console", monospace;
+}
+
+#errorDetails > * {
+  display: block;
+  margin-left: 10pt;
+  margin-right: 10pt;
+}
+
+#value::before, #lisp::before, #tree::before, #twoD::before {
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+  font-size: 12pt;
+  display: inline-block;
+  margin-right: 20pt;
+  min-width: 40pt;
+  text-align: right;
+  vertical-align: top;
+  color: lightgray;
+}
+
+#value::before { content: 'value '; }
+#lisp::before  { content: 'lisp '; }
+#tree::before  { content: 'tree '; }
+#twoD::before  { content: '2-D '; }
+
+#value, #lisp, #tree, #twoD {
+  padding: 8pt 0;
+}
+
+#tree * {
+  display: inline-block;
+  font-size: 18pt;
+  margin: 2pt 2pt 0 2pt;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+#tree *::before {
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+  display: block;
+  font-size: 10pt;
+  color: slateblue;
+  border-bottom: 1pt solid slateblue;
+}
+
+#tree expr::before   { content: 'expr'; }
+#tree addExp::before { content: 'addExp'; }
+#tree plus::before   { content: 'plus'; }
+#tree minus::before  { content: 'minus'; }
+#tree mulExp::before { content: 'mulExp'; }
+#tree times::before  { content: 'times'; }
+#tree divide::before { content: 'divide'; }
+#tree expExp::before { content: 'expExp'; }
+#tree power::before  { content: 'power'; }
+#tree priExp::before { content: 'priExp'; }
+#tree paren::before  { content: 'paren'; }
+#tree pos::before    { content: 'pos'; }
+#tree neg::before    { content: 'neg'; }
+#tree ident::before  { content: 'ident'; }
+#tree number::before { content: 'number'; }
+
+#twoD {
+  font-family: Times, "Times New Roman", serif;
+  font-size: 18pt;
+}
+
+#twoD ident {
+  font-style: italic;
+}
+
+#twoD paren {
+  display: inline-block;
+  border-image: url('parens.png') 0 93 round stretch;
+  border-width: 0 7pt;
+  margin: 2px;
+}
+
+#twoD power > exponent > paren,
+#twoD fraction > numerator > paren,
+#twoD fraction > denominator > paren {
+  border-image: none;
+}
+
+#twoD operator {
+  margin: 0 4pt;
+}
+
+#twoD fraction {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#twoD numerator, #twoD denominator {
+  padding: 0 4pt;
+}
+
+#twoD numerator {
+  display: block;
+  border-bottom: 2px solid black;
+  padding: 0 4pt;
+}
+
+#twoD denominator {
+  display: block;
+}
+
+#twoD exponent {
+  font-size: 70%;
+  vertical-align: text-top;
+  line-height: 0;
+}
+
+#twoD exponent > * {
+  line-height: 100%;
+}
