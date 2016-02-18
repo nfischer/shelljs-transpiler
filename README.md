@@ -2,9 +2,12 @@ BashToShellJS
 =============
 
 This is a source-to-source translator from Bash to
-[ShellJS](https://github.com/shelljs/shelljs). To run this, you can either
-download the package and run the `transpile.js` executable, or you can test it
-out in the web!
+[ShellJS](https://github.com/shelljs/shelljs). You can try out the translator
+live in your browser at
+[https://nfischer.github.io/BashToShellJS/](https://nfischer.github.io/BashToShellJS/).
+
+You can also download the npm package to translate files on your local machine
+directly with the `transpile.js` executable.
 
 Building the project
 --------------------
