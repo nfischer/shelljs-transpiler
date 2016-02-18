@@ -13,7 +13,7 @@
 <h1>Bash to ShellJS Translator</h1>
 <div>
 <textarea id="bashcode" cols="80" rows="20">
-Type something
+echo "Type something in this box"
 </textarea>
 <script>
 var bash = ohm.grammarFromScriptElement();
@@ -22,27 +22,23 @@ s.addOperation(
   'toJS(indent)',
   source2sourceSemantics);
 
-var m = bash.match(script);
-if (m.failed()) {
-  console.error('Invalid script');
-  exit(1);
-}
-var n = s(m);
-
-//console.log(n.toJS(0));
-
-var x = 0;
-$('#bashcode').on('blur', function (e) {
-  //alert('working');
-  var replacementText = (x++).toString();
+function loadTranslatedText() {
+  var script = document.getElementById('bashcode').value;
+  var m = bash.match(script);
+  if (m.failed()) {
+    console.error('Invalid script');
+  }
+  var n = s(m);
+  var replacementText = n.toJS(0);
   document.getElementById('jscode').innerHTML = replacementText;
-});
+}
+$('#bashcode').on('blur', loadTranslatedText);
+$('document').ready(loadTranslatedText);
 </script>
 
 </div>
 <div>
 <textarea id="jscode" cols="80" rows="20">
-Type something
 </textarea>
 </div>
 </body>

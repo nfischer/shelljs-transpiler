@@ -3,43 +3,45 @@ require('shelljs/global');
 
 config.fatal = true;
 
-if (process.argv.length < 4) {
-  echo('Usage: ' + process.argv[1] + ' <html_input> <html_output>');
+if (process.argv.length < 3) {
+  echo('Usage: ' + process.argv[1] + ' <inputFile>');
+  echo('  or   ' + process.argv[1] + ' <inputFile> <html_output>');
   exit(1);
 }
 
-var html_input = process.argv[2];
-var output_file = process.argv[3];
+var inputFile = process.argv[2];
+var outputFile = process.argv[3];
 
-if (html_input === output_file) {
+if (inputFile === outputFile) {
   echo('Must provide different file names');
   exit(2);
 }
 
 // Replace all ohm tags with inlining the code
-
-
-var matchString = '<script src=".*.ohm" type="text/ohm-js"></script>';
-var oput = grep(matchString, html_input);
-if (!oput) {
-  matchString = '<script type="text/ohm-js" src=".*.ohm"></script>';
-  oput = grep(matchString, html_input);
+var regexString = '<script src=".*.ohm" type="text/ohm-js"></script>';
+var matchString = grep(regexString, inputFile);
+if (!matchString) { // try the other order
+  regexString = '<script type="text/ohm-js" src=".*.ohm"></script>';
+  matchString = grep(regexString, inputFile);
 }
-if (!oput) {
+if (!matchString) {
   echo('Could not find script tag');
   exit(3);
 }
-var ohm_file = oput.match(/src="(.*)"/)[1];
-var ohm_grammar = cat(ohm_file);
-var newTag = oput.replace('></script>', '>\n' + ohm_grammar + '\n</script>').replace(/\s+src=".*"/, '');
-console.log(newTag);
-console.log(matchString);
-console.log(html_input);
-var output = sed(oput, newTag, html_input);
-if (output === cat(html_input)) {
+var ohmFile = matchString.match(/src="(.*)"/)[1];
+var ohmGrammar = cat(ohmFile).trim();
+var newTag = matchString
+                .replace('></script>', '>\n' + ohmGrammar + '\n</script>')
+                .replace(/\s+src=".*"/, '');
+var output = sed(matchString.trim(), newTag, inputFile);
+if (output.trim() === cat(inputFile).trim()) {
   echo('No replacement was made. Internal error.');
   exit(4);
 }
 
-output.to(output_file);
-echo('Success!');
+if (outputFile)
+  output.to(outputFile);
+else
+  echo(output);
+
+console.error('Success!');

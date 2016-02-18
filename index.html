@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bash to Javascript Translator</title>
+<script src="node_modules/ohm-js/dist/ohm.js"></script>
+<!-- <script src="node_modules/codemirror/lib/codemirror.js" type="text/javascript"></script> -->
+<!-- <link rel="stylesheet" href="lib/codemirror-5.10/lib/codemirror.css"> -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/ohm-js">
+Bash {
+  Script = (Shebang "\n")? ScriptCode
+  ScriptCode = Cmd | NullCmd
+  Shebang = "#!/bin/bash"
+  Cmd = SequenceCmd
+      | IfCommand
+      | ForCommand
+      | WhileCommand
+      | PipeCmd
+      | assignment
+      | comment
+      | CmdWithComment
+      | SimpleCmd
+
+  IfCommand
+      = IfCase ElseIfThen* ElseCase? EndIf
+
+  IfCase
+      = ifwithspace Conditional semicolon thenwithspace SimpleCmd
+  ElseIfThen
+      = semicolon elifwithspace Conditional semicolon thenwithspace SimpleCmd
+  ElseCase
+      = semicolon elsewithspace SimpleCmd
+  EndIf = semicolon "fi"
+
+  Conditional
+      = "[" bashword BinaryOp bashword "]"  -- binary
+      | "[" UnaryOp bashword "]"            -- unary
+      | SimpleCmd                           -- cmd
+
+  ForCommand
+      = ForControl Done
+
+  ForControl
+      = "for" "((" ControlStruct "))" semicolon dowithspace SimpleCmd -- c_style
+      | "for" id "in" "`" SimpleCmd "`" semicolon dowithspace SimpleCmd -- for_each
+
+  ControlStruct
+      = assignment ";" id BinaryOp bashword ";" (~")" bashword)
+
+  WhileCommand
+      = WhileControl Done
+
+  WhileControl
+      = whilewithspace Conditional semicolon dowithspace SimpleCmd
+
+  whilewithspace = "while" space+
+  dowithspace = "do" allwhitespace+
+
+  Done = semicolon "done"
+
+  /* Binary operators */
+  BinaryOp
+      = Equal | NotEqual | LessThan | GreaterThan | LessThanEq | GreaterThanEq
+  Equal = "==" | "=" | "-eq"
+  NotEqual = "!=" | "-ne"
+  LessThan = "-lt" | "<"
+  GreaterThan = "-gt" | ">"
+  LessThanEq = "-le" | "<="
+  GreaterThanEq (foo)
+      = "-ge" | ">="
+
+  /* Unary operators */
+  UnaryOp = "-z" | "-n" // TODO: add more unary ops, like -f, -d
+
+  ifwithspace (foo)
+      = "if" space+
+  elifwithspace = "elif" space+
+  elsewithspace = "else" allwhitespace+
+  thenwithspace = "then" allwhitespace+
+
+  SequenceCmd
+      = Cmd semicolon Cmd
+      | Cmd semicolon ""
+
+  PipeCmd = Cmd "|" Cmd
+
+  CmdWithComment
+      = SimpleCmd comment
+
+  SimpleCmd
+      = BasicCmd
+      | CdCmd
+      | PwdCmd
+      | LsCmd
+      | FindCmd
+      | CatCmd
+      | WhichCmd
+      /* | TestCmd */
+      | EchoCmd
+      | PushdCmd
+      | PopdCmd
+      | DirsCmd
+      | LnCmd
+      | ExitCmd
+      | ChmodCmd
+      | TouchCmd
+      | ExecCmd
+
+  BasicCmd = BasicName options? bashword+
+  CdCmd    = "cd" bashword?
+  PwdCmd   = "pwd"
+  /* TestCmd = // TODO */
+  FindCmd  = "find"  bashword+
+  LsCmd    = "ls"    options? bashword*
+  CatCmd   = "cat" bashword+
+  WhichCmd = "which" bashword
+  EchoCmd  = "echo" bashword+
+  PushdCmd = "pushd" options? bashword?
+  PopdCmd  = "popd" options? bashword?
+  DirsCmd  = "dirs" (options | bashword)?
+  LnCmd    = "ln" options? bashword bashword
+  ExitCmd  = "exit" alnum+
+  ChmodCmd = "chmod" bashword bashword
+  TouchCmd = "touch" options? bashword
+  ExecCmd  = CmdName Arglist
+
+  BasicName
+      = "cp"
+      | "rm"
+      | "mkdir"
+      | "mv"
+      | "sed"
+      | "grep"
+
+  CmdName = bashword
+  Arglist = bashword*
+  NullCmd = ""
+  comment = "#" (~"\n" any)*
+  options = "-" letter*
+
+  bashword
+      = stringLiteral
+      | number
+      | reference
+      | bareWord
+
+  reference
+      = "$" id -- simple
+      | "${" id "}" -- smart
+
+  number
+      = digit+
+
+  bareWord
+      = (~keyword (~badchars any)+)
+
+  keyword
+      = "if" | "then" | "else" | "elif" | "fi" | "for" | "do" | "done"
+
+  stringLiteral
+    = singleString
+    | doubleString
+
+  singleString = "'" notSingleQuote* "'"
+  doubleString = "\"" notDoubleQuote* "\""
+
+  notSingleQuote
+    = (~("'" | "\\") any)
+    | "\\" any -- escape
+
+  notDoubleQuote
+    = (~("\"" | "\\") any)
+    | "\\" any -- escape
+
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`"
+  assignment = id "=" bashword?
+  id = alnum+
+  space := " " | "\t"
+  allwhitespace = space | "\n"
+  semicolon = (";" | "\n")+
+}
+</script>
+
+<script src="semantics.js"></script>
+</head>
+<body>
+<h1>Bash to ShellJS Translator</h1>
+<div>
+<textarea id="bashcode" cols="80" rows="20">
+echo "Type something in this box"
+</textarea>
+<script>
+var bash = ohm.grammarFromScriptElement();
+var s = bash.semantics();
+s.addOperation(
+  'toJS(indent)',
+  source2sourceSemantics);
+
+function loadTranslatedText() {
+  var script = document.getElementById('bashcode').value;
+  var m = bash.match(script);
+  if (m.failed()) {
+    console.error('Invalid script');
+  }
+  var n = s(m);
+  var replacementText = n.toJS(0);
+  document.getElementById('jscode').innerHTML = replacementText;
+}
+$('#bashcode').on('blur', loadTranslatedText);
+$('document').ready(loadTranslatedText);
+</script>
+
+</div>
+<div>
+<textarea id="jscode" cols="80" rows="20">
+</textarea>
+</div>
+</body>
+</html>
