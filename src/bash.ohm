@@ -1,7 +1,7 @@
 Bash {
-  Script = (Shebang "\n")? ScriptCode
+  Script = (Shebang "\n"+)? ScriptCode
   ScriptCode = Cmd | NullCmd
-  Shebang = "#!/bin/bash"
+  Shebang = "#!" (~"sh" any)* "sh"
   Cmd = SequenceCmd
       | NoSemicolonCmd
       | PipeCmd
@@ -101,6 +101,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | sedCmd
       | ExecCmd
 
   BasicCmd = BasicName options? bashword+
@@ -119,6 +120,7 @@ Bash {
   ExitCmd  = "exit" alnum+
   ChmodCmd = "chmod" bashword bashword
   TouchCmd = "touch" options? bashword
+  sedCmd   = "sed 's/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'" (space+ bashword)?
   ExecCmd  = CmdName Arglist
 
   BasicName
@@ -126,7 +128,6 @@ Bash {
       | "rm"
       | "mkdir"
       | "mv"
-      | "sed"
       | "grep"
 
   CmdName = (~keyword bashword)
