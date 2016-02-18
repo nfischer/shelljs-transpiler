@@ -6,9 +6,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/ohm-js">
 Bash {
-  Script = (Shebang "\n")? ScriptCode
+  Script = (Shebang "\n"+)? ScriptCode
   ScriptCode = Cmd | NullCmd
-  Shebang = "#!/bin/bash"
+  Shebang = "#!" (~"sh" any)* "sh"
   Cmd = SequenceCmd
       | NoSemicolonCmd
       | PipeCmd
@@ -108,6 +108,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | sedCmd
       | ExecCmd
 
   BasicCmd = BasicName options? bashword+
@@ -126,6 +127,7 @@ Bash {
   ExitCmd  = "exit" alnum+
   ChmodCmd = "chmod" bashword bashword
   TouchCmd = "touch" options? bashword
+  sedCmd   = "sed 's/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'" (space+ bashword)?
   ExecCmd  = CmdName Arglist
 
   BasicName
@@ -133,7 +135,6 @@ Bash {
       | "rm"
       | "mkdir"
       | "mv"
-      | "sed"
       | "grep"
 
   CmdName = (~keyword bashword)
@@ -196,6 +197,7 @@ Bash {
 <textarea id="bashcode" spellcheck="false" cols="80" rows="20">
 echo "Type something in this box, or paste in a simple shell script"
 </textarea>
+<input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace
 <script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
@@ -206,6 +208,7 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
+  globalInclude = document.getElementById('checkbox1').checked
   var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
   errMessage = m.failed() ? m.message : null;
@@ -216,7 +219,8 @@ function loadTranslatedText() {
     document.getElementById('jscode').innerHTML = replacementText;
   }
 }
-$('#bashcode').on('keyup', loadTranslatedText);
+$('#bashcode').keyup(loadTranslatedText);
+$('#checkbox1').change(loadTranslatedText);
 $('document').ready(loadTranslatedText);
 var timeout;
 $('#bashcode').keypress(function() {

@@ -30,6 +30,8 @@ function ind(ind_count) {
   return ret;
 }
 
+var globalInclude = true;
+
 var source2sourceSemantics = {
   Cmd: function(e) { return e.toJS(this.args.indent); },
   NoSemicolonCmd: function(c) { return c.toJS(this.args.indent); },
@@ -90,22 +92,18 @@ var source2sourceSemantics = {
   GreaterThan: function(_) { return '>'; },
   LessThanEq: function(_) { return '<='; },
   GreaterThanEq: function(_) { return '>='; },
-  // IfOneArm: function(it, sc, ef) { return it.toJS(this.args.indent) + '\n' + sc.toJS(this.args.indent) + ef.toJS(this.args.indent); },
-  // IfTwoArm: function(it, sc, el, sc2, ef) { return it.toJS(this.args.indent) + '\n' + sc.toJS(this.args.indent) + '\n' + el.toJS(this.args.indent) + '\n' + sc2.toJS(this.args.indent) + '\n' + ef.toJS(this.args.indent); },
-  // IfThen: function(iw, sc, nl, _) { return 'if ' + sc.toJS(this.args.indent) + ' (\n'; },
-
-  // Else = semicolon "else"
-  // EndIf = semicolon "fi"
-  // ifwithspace = "if" space+
-  // spaceyfi = space+ "fi"
   Script: function(shebang, _, scriptcode) {
     return shebang.toJS(this.args.indent) + scriptcode.toJS(this.args.indent);
   },
-  Shebang: function(_) {
+  Shebang: function(_a, _b, _c) {
   if (this.interval.contents)
-    return "#!/usr/bin/env node\nrequire('shelljs/global');\n\n";
-  else
+    return "#!/usr/bin/env node\n" +
+        (globalInclude ? "require('shelljs/global');" : "var shell = require('shelljs');") +
+        "\n\n";
+  else {
+    alert('foo');
     return '';
+  }
   },
   ScriptCode: function(cmd) { return cmd.toJS(this.args.indent); },
   SequenceCmd: function(x) { return x.toJS(this.args.indent); },
@@ -138,9 +136,15 @@ var source2sourceSemantics = {
     ret += c2.toJS(this.args.indent);
     return ret;
   },
-  PipeCmd: function(c1, _, c2) { return c1.toJS(this.args.indent) + '.' + c2.toJS(this.args.indent); },
+  PipeCmd: function(c1, _, c2) {
+    return c1.toJS(this.args.indent) +
+        '.' +
+        c2.toJS(this.args.indent).replace(/^shell\./, '');
+  },
   SimpleCmd: function(specific_cmd) {
-    return ind(this.args.indent) + specific_cmd.toJS(this.args.indent);
+    return ind(this.args.indent) +
+        (globalInclude ? '' : 'shell.') +
+        specific_cmd.toJS(this.args.indent);
   },
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
@@ -192,7 +196,19 @@ var source2sourceSemantics = {
     return 'touch(' + cmd_helper(opts, arg, this.args.indent) + ')';
   },
   ExecCmd: function(firstword, args) {
-    return "exec('" + this.interval.contents + "')";
+    return "exec('" +
+        this.interval.contents.replace(/'/g, "\\'") +
+        "')";
+  },
+  sedCmd: function(_prefix, pat, _sl1, sub, _sl2, g, _qu, _space, file) {
+    return "sed(/" +
+        pat.interval.contents +
+        (g.interval.contents || '/') +
+        ", '" +
+        sub.interval.contents +
+        "'" +
+        (file.interval.contents ? ', ' + file.interval.contents.trim() : '') +
+        ')';
   },
   Arglist: function(_) {
     return this.interval.contents;
@@ -226,5 +242,6 @@ var source2sourceSemantics = {
 };
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = source2sourceSemantics;
+  module.exports.source2sourceSemantics = source2sourceSemantics;
+  module.exports.globalInclude = globalInclude;
 }

@@ -13,6 +13,7 @@
 <textarea id="bashcode" spellcheck="false" cols="80" rows="20">
 echo "Type something in this box, or paste in a simple shell script"
 </textarea>
+<input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace
 <script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
@@ -23,6 +24,7 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
+  globalInclude = document.getElementById('checkbox1').checked
   var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
   errMessage = m.failed() ? m.message : null;
@@ -33,7 +35,8 @@ function loadTranslatedText() {
     document.getElementById('jscode').innerHTML = replacementText;
   }
 }
-$('#bashcode').on('keyup', loadTranslatedText);
+$('#bashcode').keyup(loadTranslatedText);
+$('#checkbox1').change(loadTranslatedText);
 $('document').ready(loadTranslatedText);
 var timeout;
 $('#bashcode').keypress(function() {

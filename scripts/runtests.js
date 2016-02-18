@@ -6,7 +6,7 @@ var assert = require('assert');
 var ohm = require('ohm-js');
 var fs = require('fs');
 var path = require('path');
-var source2sourceSemantics = require('../src/semantics');
+var semantics = require('../src/semantics');
 require('shelljs/global');
 var ohmFile = path.join(__dirname, '..', 'src', 'bash.ohm');
 
@@ -18,7 +18,7 @@ var bash = ohm.grammar(contents);
 var s = bash.semantics();
 s.addOperation(
   'toJS(indent)',
-  source2sourceSemantics);
+  semantics.source2sourceSemantics);
 
 var m;
 
