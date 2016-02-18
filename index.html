@@ -211,22 +211,22 @@ $('#bashcode').on('keyup', loadTranslatedText);
 $('document').ready(loadTranslatedText);
 var timeout;
 $('#bashcode').keypress(function() {
-    if(timeout) {
-      clearTimeout(timeout);
-      timeout = null;
+  if(timeout) {
+    clearTimeout(timeout);
+    timeout = null;
+  }
+  timeout = setTimeout(function() {
+    if (errMessage) {
+      console.error(errMessage);
+      warned = true;
     }
-    timeout = setTimeout(function() {
-      if (errMessage) {
-        console.error(errMessage);
-        warned = true;
-      }
-    }, 3000);
+  }, 3000);
 });
 </script>
 
 </div>
 <div>
-<textarea id="jscode" spellcheck="false" cols="80" rows="20">
+<textarea id="jscode" spellcheck="false" cols="80" rows="20" readonly>
 </textarea>
 </div>
 </body>
