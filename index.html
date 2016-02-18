@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Bash to Javascript Translator</title>
+<title>Bash to ShellJS Translator</title>
 <script src="node_modules/ohm-js/dist/ohm.js"></script>
 <!-- <script src="node_modules/codemirror/lib/codemirror.js" type="text/javascript"></script> -->
 <!-- <link rel="stylesheet" href="lib/codemirror-5.10/lib/codemirror.css"> -->
@@ -208,6 +208,14 @@ function loadTranslatedText() {
 }
 $('#bashcode').on('blur', loadTranslatedText);
 $('document').ready(loadTranslatedText);
+var timeout;
+$('#bashcode').keypress(function() {
+    if(timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+    }
+    timeout = setTimeout(loadTranslatedText, 5000);
+});
 </script>
 
 </div>
