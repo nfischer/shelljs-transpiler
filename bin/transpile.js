@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 var ohm = require('ohm-js');
 var fs = require('fs');
-var source2sourceSemantics = require('../semantics');
+var path = require('path');
+var source2sourceSemantics = require('../src/semantics');
 require('shelljs/global');
 
-var contents = fs.readFileSync('bash.ohm');
+var contents = fs.readFileSync(path.join(__dirname, '..', 'src', 'bash.ohm'));
 var bash = ohm.grammar(contents);
 
 // Load in script, ensure a trailing newline

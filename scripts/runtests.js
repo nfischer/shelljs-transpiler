@@ -2,14 +2,15 @@
 var assert = require('assert');
 var ohm = require('ohm-js');
 var fs = require('fs');
-var source2sourceSemantics = require('./semantics');
+var path = require('path');
+var source2sourceSemantics = require('../src/semantics');
 require('shelljs/global');
-var ohm_file = __dirname + '/bash.ohm';
+var ohmFile = path.join(__dirname, '..', 'src', 'bash.ohm');
 
 config.fatal = true;
 config.silent = true;
 
-var contents = fs.readFileSync(ohm_file);
+var contents = fs.readFileSync(ohmFile);
 var bash = ohm.grammar(contents);
 var s = bash.semantics();
 s.addOperation(
