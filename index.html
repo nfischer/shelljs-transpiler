@@ -10,14 +10,18 @@ Bash {
   ScriptCode = Cmd | NullCmd
   Shebang = "#!/bin/bash"
   Cmd = SequenceCmd
-      | IfCommand
-      | ForCommand
-      | WhileCommand
+      | NoSemicolonCmd
       | PipeCmd
       | assignment
-      | comment
       | CmdWithComment
       | SimpleCmd
+
+  NoSemicolonCmd
+      = IfCommand
+      | comment
+      | ForCommand
+      | WhileCommand
+      | CmdWithComment
 
   IfCommand
       = IfCase ElseIfThen* ElseCase? EndIf
@@ -77,8 +81,10 @@ Bash {
   thenwithspace = "then" allwhitespace+
 
   SequenceCmd
-      = Cmd semicolon Cmd
-      | Cmd semicolon ""
+      = NoSemicolonCmd semicolon Cmd -- nosemicolon
+      | Cmd semicolon Cmd -- std
+      | NoSemicolonCmd semicolon -- noscNull
+      | Cmd semicolon -- null
 
   PipeCmd = Cmd "|" Cmd
 
@@ -110,7 +116,7 @@ Bash {
   /* TestCmd = // TODO */
   FindCmd  = "find"  bashword+
   LsCmd    = "ls"    options? bashword*
-  CatCmd   = "cat" bashword+
+  CatCmd   = "cat" bashword*
   WhichCmd = "which" bashword
   EchoCmd  = "echo" bashword+
   PushdCmd = "pushd" options? bashword?
@@ -130,7 +136,7 @@ Bash {
       | "sed"
       | "grep"
 
-  CmdName = bashword
+  CmdName = (~keyword bashword)
   Arglist = bashword*
   NullCmd = ""
   comment = "#" (~"\n" any)*
@@ -150,10 +156,13 @@ Bash {
       = digit+
 
   bareWord
-      = (~keyword (~badchars any)+)
+      = (~badchars any)+
 
   keyword
-      = "if" | "then" | "else" | "elif" | "fi" | "for" | "do" | "done"
+      = keywordRoot ~alnum
+
+  keywordRoot
+      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do"
 
   stringLiteral
     = singleString
@@ -197,7 +206,7 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
-  var script = document.getElementById('bashcode').value;
+  var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
   errMessage = m.failed() ? m.message : null;
   warned = false;

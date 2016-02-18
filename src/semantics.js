@@ -32,6 +32,7 @@ function ind(ind_count) {
 
 var source2sourceSemantics = {
   Cmd: function(e) { return e.toJS(this.args.indent); },
+  NoSemicolonCmd: function(c) { return c.toJS(this.args.indent); },
   IfCommand: function(ic, eit, elc, ef) {
     return ic.toJS(this.args.indent) +
       eit.toJS(this.args.indent) +
@@ -107,7 +108,8 @@ var source2sourceSemantics = {
     return '';
   },
   ScriptCode: function(cmd) { return cmd.toJS(this.args.indent); },
-  SequenceCmd: function(c1, sc, c2) {
+  SequenceCmd: function(x) { return x.toJS(this.args.indent); },
+  SequenceCmd_std: function(c1, sc, c2) {
     var mysc = sc.toJS(this.args.indent);
     var ret = c1.toJS(this.args.indent) + mysc;
     if (mysc === '\n')
@@ -115,16 +117,34 @@ var source2sourceSemantics = {
     ret += c2.toJS(this.args.indent);
     return ret;
   },
-  PipeCmd: function(c1, _, c2) { return c1.toJS(this.args.indent) + '.pipe().' + c2.toJS(this.args.indent); },
+  SequenceCmd_noscNull: function(c1, sc) {
+    var mysc = sc.toJS(this.args.indent);
+    var ret = c1.toJS(this.args.indent) + '\n';
+    return ret;
+  },
+  SequenceCmd_null: function(c1, sc) {
+    var mysc = sc.toJS(this.args.indent);
+    var ret = c1.toJS(this.args.indent) + ';\n';
+    return ret;
+  },
+  SequenceCmd_nosemicolon: function(c1, sc, c2) {
+    var mysc = sc.toJS(this.args.indent);
+    var ret = c1.toJS(this.args.indent);
+    // alert("<" + mysc + ">");
+    if (sc.interval.contents.indexOf(';') === -1)
+      ret += nl(this.args.indent);
+    else
+      ret += '; ';
+    ret += c2.toJS(this.args.indent);
+    return ret;
+  },
+  PipeCmd: function(c1, _, c2) { return c1.toJS(this.args.indent) + '.' + c2.toJS(this.args.indent); },
   SimpleCmd: function(specific_cmd) {
     return ind(this.args.indent) + specific_cmd.toJS(this.args.indent);
   },
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
   },
-  // SimpleCmd: function(firstword, args) {
-  //   return firstword.interval.contents + '(' + args.toJS(this.args.indent) + ')';
-  // },
   CdCmd: function(_, arg) { return "cd('" + arg.interval.contents + "')"; },
   PwdCmd: function(_) { return 'pwd()'; },
   LsCmd: function(_, opts, args) {

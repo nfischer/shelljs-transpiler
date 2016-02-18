@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+'use strict';
+
 var ohm = require('ohm-js');
 var fs = require('fs');
 var path = require('path');

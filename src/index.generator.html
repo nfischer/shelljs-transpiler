@@ -23,7 +23,7 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
-  var script = document.getElementById('bashcode').value;
+  var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
   errMessage = m.failed() ? m.message : null;
   warned = false;
