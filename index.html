@@ -144,14 +144,16 @@ Bash {
   options = "-" letter*
 
   bashword
-      = stringLiteral
+      = reference
       | number
-      | reference
+      | stringLiteral
       | bareWord
 
   reference
       = "$" id -- simple
       | "${" id "}" -- smart
+      | "\"$" id "\"" -- quotesimple
+      | "\"${" id "}\"" -- quotesmart
 
   number
       = digit+

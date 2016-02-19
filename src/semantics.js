@@ -218,11 +218,13 @@ var source2sourceSemantics = {
   bashword: function(val) { return val.toJS(this.args.indent); },
   reference_simple: function(_, id) { return id.interval.contents; },
   reference_smart: function(_ob, id, _cb) { return id.interval.contents; },
+  reference_quotesimple: function(_oq, id, _cq) { return id.interval.contents; },
+  reference_quotesmart: function(_oq, id, _cq) { return id.interval.contents; },
   bareWord: function(_) { return "'" + this.interval.contents + "'"; },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
   singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
   doubleString: function(_sq, val, _eq) {
-    return "'" + val.interval.contents.replace(/\\"/,  '"').replace(/'/, "\\'") + "'";
+    return "'" + val.interval.contents.replace(/\\"/g,  '"').replace(/'/g, "\\'") + "'";
   },
 
   id: function(name) {
