@@ -6,6 +6,41 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/ohm-js" src="src/bash.ohm"></script>
 <script src="src/semantics.js"></script>
+<style>
+h1, #checkbox-span {
+  font-family: Tahoma, Geneva, sans-serif;
+}
+
+textarea {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-color: black;
+  border-width: 4px;
+}
+
+html {
+  opacity: 1;
+  font-color: black;
+}
+html:before {
+  content: ' ';
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.4;
+  background-image: url('resources/shells.jpg');
+  background-repeat: no-repeat;
+  background-position: 50% 0;
+  -ms-background-size: cover;
+  -o-background-size: cover;
+  -moz-background-size: cover;
+  -webkit-background-size: cover;
+  background-size: cover;
+}
+</style>
 </head>
 <body>
 <h1>Bash to ShellJS Translator</h1>
@@ -13,7 +48,7 @@
 <textarea id="bashcode" spellcheck="false" cols="80" rows="20">
 echo "Type something in this box, or paste in a simple shell script"
 </textarea>
-<input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace
+<span id="checkbox-span"><input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace</span>
 <script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
