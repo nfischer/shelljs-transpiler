@@ -8,4 +8,5 @@ exec('git rev-parse --abbrev-ref HEAD');
 exec('git merge master --commit');
 exec('git push origin gh-pages');
 exec('git checkout -');
+exec('npm install');
 echo('Deployed to https://nfischer.github.io/BashToShellJS/');
