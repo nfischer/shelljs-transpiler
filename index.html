@@ -213,7 +213,7 @@ Bash {
 
   badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")"
   Assignment
-      = ("local" | "readonly")? idEqual Bashword?
+      = ("local " | "readonly " | "export ")? idEqual Bashword?
   idEqual = id "="
   id = (~keyword alnum+)
   space := " " | "\t"

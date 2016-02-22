@@ -30,6 +30,13 @@ function ind(ind_count) {
   return ret;
 }
 
+function env(str) {
+  if (str === str.toUpperCase())
+    return (globalInclude ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
+  else
+    return str;
+}
+
 var globalInclude = true;
 var globalEnvironment = {};
 
@@ -256,10 +263,18 @@ var source2sourceSemantics = {
   comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
   Bashword: function(val) { return val.toJS(this.args.indent); },
   reference_errCode: function(_) { return 'error()'; },
-  reference_simple: function(_, id) { return id.interval.contents; },
-  reference_smart: function(_ob, id, _cb) { return id.interval.contents; },
-  reference_quotesimple: function(_oq, id, _cq) { return id.interval.contents; },
-  reference_quotesmart: function(_oq, id, _cq) { return id.interval.contents; },
+  reference_simple: function(_, id) {
+    return env(id.interval.contents);
+  },
+  reference_smart: function(_ob, id, _cb) {
+    return env(id.interval.contents);
+  },
+  reference_quotesimple: function(_oq, id, _cq) {
+    return env(id.interval.contents);
+  },
+  reference_quotesmart: function(_oq, id, _cq) {
+    return env(id.interval.contents);
+  },
   bareWord: function(_) { return "'" + this.interval.contents + "'"; },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
   singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
@@ -267,18 +282,18 @@ var source2sourceSemantics = {
     return "'" + val.interval.contents.replace(/\\"/g,  '"').replace(/'/g, "\\'") + "'";
   },
   id: function(_) {
-    return this.interval.contents;
+    return env(this.interval.contents);
   },
-  idEqual: function(_1, _2) {
-    return this.interval.contents;
+  idEqual: function(id, _) {
+    return id.toJS(0) + '=';
   },
   Call: function(_s, cmd, _e) { return cmd.toJS(0) },
   Assignment: function(varType, nameEqual, expr) {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
     var ret;
-    var varName = nameEqual.toJS(0).trim().slice(0, -1);
-    if (globalEnvironment[varName]) {
+    var varName = nameEqual.toJS(0).trim().slice(0, -1); // trim off '='
+    if (varName.match(/^(shell.)?env./) || globalEnvironment[varName]) {
       ret = '';
     } else {
       ret = varType.interval.contents.indexOf('readonly') > -1 ? 'const ' : 'var ';

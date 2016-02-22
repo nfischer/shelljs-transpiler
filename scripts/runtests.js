@@ -333,5 +333,12 @@ assert.equal(s(m).toJS(0), "if (error() === 0) {\n" +
                            "  echo(error());\n" +
                            "}\n");
 
+// Env variables
+m = bash.match("BASH=/bin/sh\nexport NEWENV='foo'\necho $PATH\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "env.BASH = '/bin/sh';\n" +
+                           "env.NEWENV = 'foo';\n" +
+                           "echo(env.PATH);\n");
+
 config.silent = false;
 echo('All tests passed!');
