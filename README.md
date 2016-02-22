@@ -2,8 +2,8 @@ BashToShellJS
 =============
 
 This is a source-to-source translator from Bash to
-[ShellJS](https://github.com/shelljs/shelljs). You can try out the translator
-live in your browser at
+[ShellJS](https://github.com/shelljs/shelljs). You can **try out the translator
+live in your browser** at
 [https://nfischer.github.io/BashToShellJS/](https://nfischer.github.io/BashToShellJS/).
 
 You can also download the npm package to translate files on your local machine
