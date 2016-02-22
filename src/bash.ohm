@@ -1,12 +1,12 @@
 Bash {
-  Script = (Shebang "\n"+)? ScriptCode
+  Script
+      = (comment | allwhitespace)* (Shebang allwhitespace+)? ScriptCode?
   ScriptCode = Cmd | NullCmd
   Shebang = "#!" (~"sh" any)* "sh"
   Cmd = SequenceCmd
       | NoSemicolonCmd
       | PipeCmd
-      | assignment
-      | CmdWithComment
+      | Assignment
       | SimpleCmd
 
   NoSemicolonCmd
@@ -16,11 +16,21 @@ Bash {
       | WhileCommand
       | CmdWithComment
 
+  BlockedCmd (a command that can appear inside a block)
+      = comment
+      /* = IfCommand */
+      /* | ForCommand */
+      /* | WhileCommand */
+      /* | CmdWithComment */
+      /* | PipeCmd */
+      /* | Assignment */
+      | SimpleCmd
+
   IfCommand
       = IfCase ElseIfThen* ElseCase? EndIf
 
   IfCase
-      = ifwithspace Conditional semicolon thenwithspace SimpleCmd
+      = ifwithspace Conditional semicolon thenwithspace BlockedCmd
   ElseIfThen
       = semicolon elifwithspace Conditional semicolon thenwithspace SimpleCmd
   ElseCase
@@ -28,19 +38,18 @@ Bash {
   EndIf = semicolon "fi"
 
   Conditional
-      = "[" bashword BinaryOp bashword "]"  -- binary
-      | "[" UnaryOp bashword "]"            -- unary
-      | SimpleCmd                           -- cmd
+      = TestCmd   -- test
+      | SimpleCmd -- cmd
 
   ForCommand
       = ForControl Done
 
   ForControl
       = "for" "((" ControlStruct "))" semicolon dowithspace SimpleCmd -- c_style
-      | "for" id "in" "`" SimpleCmd "`" semicolon dowithspace SimpleCmd -- for_each
+      | "for" id "in" Call semicolon dowithspace SimpleCmd -- for_each
 
   ControlStruct
-      = assignment ";" id BinaryOp bashword ";" (~")" bashword)
+      = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
 
   WhileCommand
       = WhileControl Done
@@ -53,23 +62,20 @@ Bash {
 
   Done = semicolon "done"
 
-  /* Binary operators */
-  BinaryOp
+  BinaryOp (Binary operator)
       = Equal | NotEqual | LessThan | GreaterThan | LessThanEq | GreaterThanEq
-  Equal = "==" | "=" | "-eq"
-  NotEqual = "!=" | "-ne"
-  LessThan = "-lt" | "<"
-  GreaterThan = "-gt" | ">"
-  LessThanEq = "-le" | "<="
-  GreaterThanEq (foo)
-      = "-ge" | ">="
+  Equal         = "==" | "=" | "-eq"
+  NotEqual      = "!=" | "-ne"
+  LessThan      = "-lt" | "<"
+  GreaterThan   = "-gt" | ">"
+  LessThanEq    = "-le" | "<="
+  GreaterThanEq = "-ge" | ">="
 
-  /* Unary operators */
-  UnaryOp = "-z" | "-n" // TODO: add more unary ops, like -f, -d
+  UnaryOp (Unary operator)
+      = "-z" | "-n" | "-b" | "-c" | "-d" | "-e" | "-f" | "-L" | "-p" | "-S"
 
-  ifwithspace (foo)
-      = "if" space+
-  elifwithspace = "elif" space+
+  ifwithspace   = "if"   allwhitespace+
+  elifwithspace = "elif" allwhitespace+
   elsewithspace = "else" allwhitespace+
   thenwithspace = "then" allwhitespace+
 
@@ -85,6 +91,13 @@ Bash {
       = SimpleCmd comment
 
   SimpleCmd
+      = SimpleCmdBase Redirect*
+
+  Redirect
+      = ">" Bashword
+      | ">>" Bashword
+
+  SimpleCmdBase
       = BasicCmd
       | CdCmd
       | PwdCmd
@@ -92,7 +105,7 @@ Bash {
       | FindCmd
       | CatCmd
       | WhichCmd
-      /* | TestCmd */
+      | TestCmd
       | EchoCmd
       | PushdCmd
       | PopdCmd
@@ -101,52 +114,68 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
-      | sedCmd
+      | SedCmd
       | ExecCmd
 
-  BasicCmd = BasicName options? bashword+
-  CdCmd    = "cd" bashword?
+  BasicCmd = BasicName options? Bashword+
+  CdCmd    = "cd" Bashword?
   PwdCmd   = "pwd"
-  /* TestCmd = // TODO */
-  FindCmd  = "find"  bashword+
-  LsCmd    = "ls"    options? bashword*
-  CatCmd   = "cat" bashword*
-  WhichCmd = "which" bashword
-  EchoCmd  = "echo" bashword+
-  PushdCmd = "pushd" options? bashword?
-  PopdCmd  = "popd" options? bashword?
-  DirsCmd  = "dirs" (options | bashword)?
-  LnCmd    = "ln" options? bashword bashword
-  ExitCmd  = "exit" alnum+
-  ChmodCmd = "chmod" bashword bashword
-  TouchCmd = "touch" options? bashword
-  sedCmd   = "sed 's/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'" (space+ bashword)?
+  TestCmd
+      = "test " UnaryOp Bashword           -- unary
+      | "test " Bashword BinaryOp Bashword -- binary
+      | "[" UnaryOp Bashword "]"           -- unaryBracket
+      | "[" Bashword BinaryOp Bashword "]" -- binaryBracket
+  FindCmd  = "find "  Bashword+
+  LsCmd    = "ls"     options? Bashword*
+  CatCmd   = "cat"    Bashword*
+  WhichCmd = "which " Bashword
+  EchoCmd  = "echo "  Bashword+
+  PushdCmd = "pushd"  options? Bashword?
+  PopdCmd  = "popd"   options? Bashword?
+  DirsCmd  = "dirs"   (options | Bashword)?
+  LnCmd    = "ln "    options? Bashword Bashword
+  ExitCmd  = "exit"   ("-"? digit+)?
+  ChmodCmd = "chmod " Bashword Bashword
+  TouchCmd = "touch " options? Bashword
+  SedCmd   = "sed "   sedRegex Bashword?
   ExecCmd  = CmdName Arglist
 
+  sedRegex = "'s/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'"
   BasicName
-      = "cp"
-      | "rm"
-      | "mkdir"
-      | "mv"
-      | "grep"
+      = "cp "
+      | "rm "
+      | "mkdir "
+      | "mv "
+      | "grep "
 
-  CmdName = (~keyword bashword)
-  Arglist = bashword*
+  CmdName = (~keyword Bashword)
+  Arglist = Bashword*
   NullCmd = ""
-  comment = "#" (~"\n" any)*
+  comment = space* ("#" ~"!") (~"\n" any)*
   options = "-" letter*
 
-  bashword
-      = reference
+  Bashword
+      = Call
+      | reference
       | number
       | stringLiteral
       | bareWord
 
+  Call
+      = "$(" Cmd ")"
+      | "\"$(" Cmd ")\""
+      | "`" Cmd "`"
+      | "\"`" Cmd "`\""
+
   reference
-      = "$" id -- simple
+      = reference_errCode
+      | "$" id -- simple
       | "${" id "}" -- smart
       | "\"$" id "\"" -- quotesimple
       | "\"${" id "}\"" -- quotesmart
+
+  reference_errCode
+      = "$?" | "${?}" | "\"$?\"" | "\"${?}\""
 
   number
       = digit+
@@ -161,23 +190,25 @@ Bash {
       = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do"
 
   stringLiteral
-    = singleString
-    | doubleString
+      = singleString
+      | doubleString
 
   singleString = "'" notSingleQuote* "'"
   doubleString = "\"" notDoubleQuote* "\""
 
   notSingleQuote
-    = (~("'" | "\\") any)
-    | "\\" any -- escape
+      = (~("'" | "\\") any)
+      | "\\" any -- escape
 
   notDoubleQuote
-    = (~("\"" | "\\") any)
-    | "\\" any -- escape
+      = (~("\"" | "\\") any)
+      | "\\" any -- escape
 
-  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`"
-  assignment = id "=" bashword?
-  id = alnum+
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")"
+  Assignment
+      = ("local " | "readonly " | "export ")? idEqual Bashword?
+  idEqual = id "="
+  id = (~keyword alnum+)
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon = (";" | "\n")+

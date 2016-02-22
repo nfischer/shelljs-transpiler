@@ -30,7 +30,15 @@ function ind(ind_count) {
   return ret;
 }
 
+function env(str) {
+  if (str === str.toUpperCase())
+    return (globalInclude ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
+  else
+    return str;
+}
+
 var globalInclude = true;
+var globalEnvironment = {};
 
 var source2sourceSemantics = {
   Cmd: function(e) { return e.toJS(this.args.indent); },
@@ -53,9 +61,11 @@ var source2sourceSemantics = {
   EndIf: function(_sc, _fi) {
     return nl(this.args.indent) + '}';
   },
-  ForCommand: function(fc, done) {
-    return fc.toJS(this.args.indent) +
-      done.toJS(this.args.indent);
+  ForCommand: function(fc, _done) {
+    var controlStr = fc.toJS(this.args.indent);
+    return controlStr +
+      nl(this.args.indent) + '}' +
+      (controlStr.indexOf('forEach') > -1 ? ');' : '');
   },
   ForControl: function(f) { return f.toJS(this.args.indent); },
   ForControl_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _dws, cmd) {
@@ -66,9 +76,8 @@ var source2sourceSemantics = {
     return assign.toJS(0) + ';' + id.interval.contents + binop.toJS(0) + val.toJS(0) +
       ';' + update.interval.contents;
   },
-  ForControl_for_each: function(_for, id, _in, _bt1, cmd1, _bt2, _sc, _dws, cmd2) {
-    return 'for (' + 'var ' + id.interval.contents +
-      ' of ' + cmd1.toJS(0) + ') {' +
+  ForControl_for_each: function(_for, id, _in, call, _sc, _dws, cmd2) {
+    return call.toJS(this.args.indent) + '.forEach(function (' + id.interval.contents + ') {' +
       nl(this.args.indent + 1) + cmd2.toJS(this.args.indent) + ';';
   },
   WhileCommand: function(wc, done) {
@@ -82,8 +91,26 @@ var source2sourceSemantics = {
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
-  Conditional_binary: function(_ob, bw1, binop, bw2, _cb) {
+  TestCmd_unary: function(_, unop, bw) {
+    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  },
+  TestCmd_binary: function(_, bw1, binop, bw2) {
     return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  },
+  TestCmd_unaryBracket: function(_ob, unop, bw, _cb) {
+    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  },
+  TestCmd_binaryBracket: function(_ob, bw1, binop, bw2, _cb) {
+    return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  },
+  Conditional_test: function(sc) {
+    var ret = sc.toJS(0);
+    if (!globalInclude && ret.indexOf('test') > -1)
+      ret = ret.replace('test(', 'shell.test(')
+    return ret;
+  },
+  Conditional_cmd: function(sc) {
+    return sc.toJS(0) + '.code === 0';
   },
   BinaryOp: function(op) { return op.toJS(this.args.indent); },
   Equal: function(_) { return '==='; },
@@ -92,18 +119,22 @@ var source2sourceSemantics = {
   GreaterThan: function(_) { return '>'; },
   LessThanEq: function(_) { return '<='; },
   GreaterThanEq: function(_) { return '>='; },
-  Script: function(shebang, _, scriptcode) {
-    return shebang.toJS(this.args.indent) + scriptcode.toJS(this.args.indent);
+  Script: function(prefix, shebang, _, scriptcode) {
+    // Always reset the global environment to empty
+    globalEnvironment = {};
+    return prefix.toJS(this.args.indent).join('') +
+        (this.interval.contents.match(/^(\s)*$/)
+          ? ''
+          : shebang.toJS(this.args.indent) + scriptcode.toJS(this.args.indent));
   },
   Shebang: function(_a, _b, _c) {
-  if (this.interval.contents)
-    return "#!/usr/bin/env node\n" +
-        (globalInclude ? "require('shelljs/global');" : "var shell = require('shelljs');") +
-        "\n\n";
-  else {
-    alert('foo');
-    return '';
-  }
+    if (this.interval.contents)
+      return "#!/usr/bin/env node\n" +
+          (globalInclude ? "require('shelljs/global');" : "var shell = require('shelljs');") +
+          "\n\n";
+    else {
+      return '';
+    }
   },
   ScriptCode: function(cmd) { return cmd.toJS(this.args.indent); },
   SequenceCmd: function(x) { return x.toJS(this.args.indent); },
@@ -128,23 +159,34 @@ var source2sourceSemantics = {
   SequenceCmd_nosemicolon: function(c1, sc, c2) {
     var mysc = sc.toJS(this.args.indent);
     var ret = c1.toJS(this.args.indent);
-    // alert("<" + mysc + ">");
-    if (sc.interval.contents.indexOf(';') === -1)
-      ret += nl(this.args.indent);
-    else
+    var secondIndent;
+    if (sc.interval.contents.indexOf(';') === -1) {
+      ret += sc.interval.contents;
+      secondIndent = this.args.indent;
+    } else {
       ret += '; ';
-    ret += c2.toJS(this.args.indent);
+      secondIndent = 0;
+    }
+    ret += c2.toJS(secondIndent);
     return ret;
   },
   PipeCmd: function(c1, _, c2) {
     return c1.toJS(this.args.indent) +
         '.' +
-        c2.toJS(this.args.indent).replace(/^shell\./, '');
+        c2.toJS(0).replace(/^shell\./, '');
   },
-  SimpleCmd: function(specific_cmd) {
+  SimpleCmd: function(scb, redirects) {
     return ind(this.args.indent) +
-        (globalInclude ? '' : 'shell.') +
+        scb.toJS(this.args.indent) +
+        redirects.toJS(this.args.indent).join('');
+  },
+  SimpleCmdBase: function(specific_cmd) {
+    return (globalInclude ? '' : 'shell.') +
         specific_cmd.toJS(this.args.indent);
+  },
+  Redirect: function(arrow, bw) {
+    return (arrow.interval.contents.match('>>') ? '.toEnd(' : '.to(') +
+        bw.toJS(0) + ')';
   },
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
@@ -158,7 +200,7 @@ var source2sourceSemantics = {
     return "find('" + args.interval.contents + "')";
   },
   BasicCmd: function(cname, opts, args) {
-    return cname.interval.contents + '(' + cmd_helper(opts, args, this.args.indent) + ')';
+    return cname.interval.contents.trim() + '(' + cmd_helper(opts, args, this.args.indent) + ')';
   },
   CatCmd: function(_, args) {
     return 'cat(' + cmd_helper(null, args, this.args.indent) + ')';
@@ -186,8 +228,8 @@ var source2sourceSemantics = {
     params.push(dest.toJS(this.args.indent));
     return 'ln(' + params.join(', ') + ')';
   },
-  ExitCmd: function(_, code) {
-    return 'exit(' + code.interval.contents + ')';
+  ExitCmd: function(_, neg, code) {
+    return 'exit(' + (code.interval.contents.trim() || '0') + ')';
   },
   ChmodCmd: function(_, arg1, arg2) {
     return 'chmod(' + cmd_helper(arg1, arg2, this.args.indent) + ')';
@@ -200,46 +242,78 @@ var source2sourceSemantics = {
         this.interval.contents.replace(/'/g, "\\'") +
         "')";
   },
-  sedCmd: function(_prefix, pat, _sl1, sub, _sl2, g, _qu, _space, file) {
-    return "sed(/" +
-        pat.interval.contents +
+  SedCmd: function(_prefix, sRegex, file) {
+    return "sed(" +
+        sRegex.toJS(0) +
+        (file.interval.contents ? ', ' + file.toJS(0) : '') +
+        ')';
+  },
+  sedRegex: function(_prefix, pat, _sl1, sub, _sl2, g, _qu) {
+    return '/' + pat.interval.contents +
         (g.interval.contents || '/') +
         ", '" +
         sub.interval.contents +
-        "'" +
-        (file.interval.contents ? ', ' + file.interval.contents.trim() : '') +
-        ')';
+        "'";
   },
   Arglist: function(_) {
     return this.interval.contents;
   },
   options: function(_minus, _letters) { return "'" + this.interval.contents + "'"; },
-  comment: function(_, msg) { return '//' + msg.interval.contents; },
-  bashword: function(val) { return val.toJS(this.args.indent); },
-  reference_simple: function(_, id) { return id.interval.contents; },
-  reference_smart: function(_ob, id, _cb) { return id.interval.contents; },
-  reference_quotesimple: function(_oq, id, _cq) { return id.interval.contents; },
-  reference_quotesmart: function(_oq, id, _cq) { return id.interval.contents; },
+  // TODO(nate): make this preserve leading whitespace
+  comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
+  Bashword: function(val) { return val.toJS(this.args.indent); },
+  reference_errCode: function(_) { return 'error()'; },
+  reference_simple: function(_, id) {
+    return env(id.interval.contents);
+  },
+  reference_smart: function(_ob, id, _cb) {
+    return env(id.interval.contents);
+  },
+  reference_quotesimple: function(_oq, id, _cq) {
+    return env(id.interval.contents);
+  },
+  reference_quotesmart: function(_oq, id, _cq) {
+    return env(id.interval.contents);
+  },
   bareWord: function(_) { return "'" + this.interval.contents + "'"; },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
   singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
   doubleString: function(_sq, val, _eq) {
     return "'" + val.interval.contents.replace(/\\"/g,  '"').replace(/'/g, "\\'") + "'";
   },
-
-  id: function(name) {
-    return this.interval.contents;
+  id: function(_) {
+    return env(this.interval.contents);
   },
-  assignment: function(name, _, expr) {
-    var ret = 'var ' + name.toJS(this.args.indent) + " = ";
-    ret += expr.toJS(this.args.indent).toString() ? expr.toJS(this.args.indent) : "''";
+  idEqual: function(id, _) {
+    return id.toJS(0) + '=';
+  },
+  Call: function(_s, cmd, _e) { return cmd.toJS(0) },
+  Assignment: function(varType, nameEqual, expr) {
+    // Check if this variable is assigned already. If not, stick it in the
+    // environment
+    var ret;
+    var varName = nameEqual.toJS(0).trim().slice(0, -1); // trim off '='
+    if (varName.match(/^(shell.)?env./) || globalEnvironment[varName]) {
+      ret = '';
+    } else {
+      ret = varType.interval.contents.indexOf('readonly') > -1 ? 'const ' : 'var ';
+      globalEnvironment[varName] = true; // mark it as declared
+    }
+
+    ret += varName + " = " +
+        (expr.toJS(this.args.indent).toString()
+          ? expr.toJS(this.args.indent)
+          : "''");
     return ret;
+  },
+  allwhitespace: function(_) {
+    return this.interval.contents;
   },
   semicolon: function(_) {
     if (this.interval.contents.match(/^;+$/))
       return '; ';
     else
-      return ';\n';
+      return ';' + this.interval.contents;
   }
 };
 
