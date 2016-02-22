@@ -1,6 +1,8 @@
 BashToShellJS
 =============
 
+[![Build Status](https://travis-ci.org/nfischer/BashToShellJS.svg?branch=master)](https://travis-ci.org/nfischer/BashToShellJS)
+
 This is a source-to-source translator from Bash to
 [ShellJS](https://github.com/shelljs/shelljs). You can **try out the translator
 live in your browser** at
