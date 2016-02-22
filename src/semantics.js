@@ -70,7 +70,7 @@ var source2sourceSemantics = {
       ';' + update.interval.contents;
   },
   ForControl_for_each: function(_for, id, _in, call, _sc, _dws, cmd2) {
-    return call.toJS(this.args.indent) + '.forEach(function(' + id.interval.contents + ') {' +
+    return call.toJS(this.args.indent) + '.forEach(function (' + id.interval.contents + ') {' +
       nl(this.args.indent + 1) + cmd2.toJS(this.args.indent) + ';';
   },
   WhileCommand: function(wc, done) {
@@ -152,10 +152,9 @@ var source2sourceSemantics = {
   SequenceCmd_nosemicolon: function(c1, sc, c2) {
     var mysc = sc.toJS(this.args.indent);
     var ret = c1.toJS(this.args.indent);
-    // alert("<" + mysc + ">");
     var secondIndent;
     if (sc.interval.contents.indexOf(';') === -1) {
-      ret += nl(this.args.indent);
+      ret += sc.interval.contents;
       secondIndent = this.args.indent;
     } else {
       ret += '; ';
@@ -222,8 +221,8 @@ var source2sourceSemantics = {
     params.push(dest.toJS(this.args.indent));
     return 'ln(' + params.join(', ') + ')';
   },
-  ExitCmd: function(_, code) {
-    return 'exit(' + code.interval.contents + ')';
+  ExitCmd: function(_, neg, code) {
+    return 'exit(' + (code.interval.contents.trim() || '0') + ')';
   },
   ChmodCmd: function(_, arg1, arg2) {
     return 'chmod(' + cmd_helper(arg1, arg2, this.args.indent) + ')';
@@ -253,7 +252,8 @@ var source2sourceSemantics = {
     return this.interval.contents;
   },
   options: function(_minus, _letters) { return "'" + this.interval.contents + "'"; },
-  comment: function(_, msg) { return '//' + msg.interval.contents; },
+  // TODO(nate): make this preserve leading whitespace
+  comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
   Bashword: function(val) { return val.toJS(this.args.indent); },
   reference_errCode: function(_) { return 'error()'; },
   reference_simple: function(_, id) { return id.interval.contents; },
