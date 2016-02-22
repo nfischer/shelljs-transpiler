@@ -128,9 +128,9 @@ Bash {
   CdCmd    = "cd" Bashword?
   PwdCmd   = "pwd"
   TestCmd
-      = "test " UnaryOp Bashword -- unary
+      = "test " UnaryOp Bashword           -- unary
       | "test " Bashword BinaryOp Bashword -- binary
-      | "[" UnaryOp Bashword "]" -- unaryBracket
+      | "[" UnaryOp Bashword "]"           -- unaryBracket
       | "[" Bashword BinaryOp Bashword "]" -- binaryBracket
   FindCmd  = "find "  Bashword+
   LsCmd    = "ls"     options? Bashword*
@@ -149,11 +149,11 @@ Bash {
 
   sedRegex = "'s/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'"
   BasicName
-      = "cp"
-      | "rm"
-      | "mkdir"
-      | "mv"
-      | "grep"
+      = "cp "
+      | "rm "
+      | "mkdir "
+      | "mv "
+      | "grep "
 
   CmdName = (~keyword Bashword)
   Arglist = Bashword*

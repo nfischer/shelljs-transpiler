@@ -193,7 +193,7 @@ var source2sourceSemantics = {
     return "find('" + args.interval.contents + "')";
   },
   BasicCmd: function(cname, opts, args) {
-    return cname.interval.contents + '(' + cmd_helper(opts, args, this.args.indent) + ')';
+    return cname.interval.contents.trim() + '(' + cmd_helper(opts, args, this.args.indent) + ')';
   },
   CatCmd: function(_, args) {
     return 'cat(' + cmd_helper(null, args, this.args.indent) + ')';

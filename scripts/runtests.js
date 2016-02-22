@@ -307,5 +307,18 @@ m = bash.match("cat file.txt   | grep 'foo'|sed 's/o/a/g'>out.txt\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "cat('file.txt').grep('foo').sed(/o/g, 'a').to('out.txt');\n");
 
+// Mistyped cp, rm, etc. evaluate to an exec()
+m = bash.match("cpfile.txt dest\nrmfile.txt\nmkdirdirname\nmva b\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "exec('cpfile.txt dest');\n" +
+                           "exec('rmfile.txt');\n" +
+                           "exec('mkdirdirname');\n" +
+                           "exec('mva b');\n");
+
+// Trailing semicolons? No problem
+m = bash.match("cat file.txt;;;\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "cat('file.txt');\n");
+
 config.silent = false;
 echo('All tests passed!');
