@@ -182,7 +182,7 @@ Bash {
       | "\"${" id "}\"" -- quotesmart
 
   reference_errCode
-      = "$?" | "${?}"
+      = "$?" | "${?}" | "\"$?\"" | "\"${?}\""
 
   number
       = digit+

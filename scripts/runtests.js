@@ -320,5 +320,18 @@ m = bash.match("cat file.txt;;;\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "cat('file.txt');\n");
 
+// $? -> error()
+m = bash.match("if [ $? == 0 ]; then\n" +
+               "  echo \"$?\"\n" +
+               "else\n" +
+               "  echo \"${?}\"\n" +
+               "fi\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "if (error() === 0) {\n" +
+                           "  echo(error());\n" +
+                           "} else {\n" +
+                           "  echo(error());\n" +
+                           "}\n");
+
 config.silent = false;
 echo('All tests passed!');
