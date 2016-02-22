@@ -85,6 +85,9 @@ var source2sourceSemantics = {
   Conditional_binary: function(_ob, bw1, binop, bw2, _cb) {
     return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
   },
+  Conditional_cmd: function(sc) {
+    return sc.toJS(0) + '.code === 0';
+  },
   BinaryOp: function(op) { return op.toJS(this.args.indent); },
   Equal: function(_) { return '==='; },
   NotEqual: function(_) { return '!=='; },
@@ -228,6 +231,7 @@ var source2sourceSemantics = {
   options: function(_minus, _letters) { return "'" + this.interval.contents + "'"; },
   comment: function(_, msg) { return '//' + msg.interval.contents; },
   bashword: function(val) { return val.toJS(this.args.indent); },
+  reference_errCode: function(_) { return 'error()'; },
   reference_simple: function(_, id) { return id.interval.contents; },
   reference_smart: function(_ob, id, _cb) { return id.interval.contents; },
   reference_quotesimple: function(_oq, id, _cq) { return id.interval.contents; },

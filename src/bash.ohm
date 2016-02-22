@@ -150,10 +150,14 @@ Bash {
       | bareWord
 
   reference
-      = "$" id -- simple
+      = reference_errCode
+      | "$" id -- simple
       | "${" id "}" -- smart
       | "\"$" id "\"" -- quotesimple
       | "\"${" id "}\"" -- quotesmart
+
+  reference_errCode
+      = "$?" | "${?}"
 
   number
       = digit+

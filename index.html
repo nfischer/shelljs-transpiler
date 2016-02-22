@@ -157,10 +157,14 @@ Bash {
       | bareWord
 
   reference
-      = "$" id -- simple
+      = reference_errCode1
+      | "$" id -- simple
       | "${" id "}" -- smart
       | "\"$" id "\"" -- quotesimple
       | "\"${" id "}\"" -- quotesmart
+
+  reference_errCode1
+      = "$?" | "${?}"
 
   number
       = digit+
@@ -199,11 +203,17 @@ Bash {
 </script>
 
 <script src="src/semantics.js"></script>
+<style>
+textarea {
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+</style>
 </head>
 <body>
 <h1>Bash to ShellJS Translator</h1>
 <div>
-<textarea id="bashcode" spellcheck="false" cols="80" rows="20">
+<textarea id="bashcode" spellcheck="false" cols="80" rows="20" wrap="off">
 echo "Type something in this box, or paste in a simple shell script"
 </textarea>
 <input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace
@@ -248,7 +258,7 @@ $('#bashcode').keypress(function() {
 
 </div>
 <div>
-<textarea id="jscode" spellcheck="false" cols="80" rows="20" readonly>
+<textarea id="jscode" spellcheck="false" cols="80" rows="20" wrap="off" readonly>
 </textarea>
 <input type="button" value="Select all" onclick="selectAll()" id="button1">
 </div>
