@@ -4,6 +4,7 @@ os: linux
 
 before_script:
   - npm install -g gulp-cli
+  - npm install
 
 script:
   - npm test
