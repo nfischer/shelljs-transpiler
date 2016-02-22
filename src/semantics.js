@@ -129,22 +129,34 @@ var source2sourceSemantics = {
     var mysc = sc.toJS(this.args.indent);
     var ret = c1.toJS(this.args.indent);
     // alert("<" + mysc + ">");
-    if (sc.interval.contents.indexOf(';') === -1)
+    var secondIndent;
+    if (sc.interval.contents.indexOf(';') === -1) {
       ret += nl(this.args.indent);
-    else
+      secondIndent = this.args.indent;
+    } else {
       ret += '; ';
-    ret += c2.toJS(this.args.indent);
+      secondIndent = 0;
+    }
+    ret += c2.toJS(secondIndent);
     return ret;
   },
   PipeCmd: function(c1, _, c2) {
     return c1.toJS(this.args.indent) +
         '.' +
-        c2.toJS(this.args.indent).replace(/^shell\./, '');
+        c2.toJS(0).replace(/^shell\./, '');
   },
-  SimpleCmd: function(specific_cmd) {
+  SimpleCmd: function(scb, redirects) {
     return ind(this.args.indent) +
-        (globalInclude ? '' : 'shell.') +
+        scb.toJS(this.args.indent) +
+        redirects.toJS(this.args.indent).join('');
+  },
+  SimpleCmdBase: function(specific_cmd) {
+    return (globalInclude ? '' : 'shell.') +
         specific_cmd.toJS(this.args.indent);
+  },
+  Redirect: function(arrow, bw) {
+    return (arrow.interval.contents.match('>>') ? '.toEnd(' : '.to(') +
+        bw.toJS(0) + ')';
   },
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);

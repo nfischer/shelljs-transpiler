@@ -85,6 +85,13 @@ Bash {
       = SimpleCmd comment
 
   SimpleCmd
+      = SimpleCmdBase Redirect*
+
+  Redirect
+      = ">" bashword
+      | ">>" bashword
+
+  SimpleCmdBase
       = BasicCmd
       | CdCmd
       | PwdCmd
