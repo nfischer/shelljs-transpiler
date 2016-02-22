@@ -28,8 +28,7 @@ Bash {
   EndIf = semicolon "fi"
 
   Conditional
-      = "[" bashword BinaryOp bashword "]"  -- binary
-      | "[" UnaryOp bashword "]"            -- unary
+      = TestCmd                             -- test
       | SimpleCmd                           -- cmd
 
   ForCommand
@@ -65,7 +64,7 @@ Bash {
       = "-ge" | ">="
 
   /* Unary operators */
-  UnaryOp = "-z" | "-n" // TODO: add more unary ops, like -f, -d
+  UnaryOp = "-z" | "-n" | "-b" | "-c" | "-d" | "-e" | "-f" | "-L" | "-p" | "-S"
 
   ifwithspace (foo)
       = "if" space+
@@ -99,7 +98,7 @@ Bash {
       | FindCmd
       | CatCmd
       | WhichCmd
-      /* | TestCmd */
+      | TestCmd
       | EchoCmd
       | PushdCmd
       | PopdCmd
@@ -114,7 +113,11 @@ Bash {
   BasicCmd = BasicName options? bashword+
   CdCmd    = "cd" bashword?
   PwdCmd   = "pwd"
-  /* TestCmd = // TODO */
+  TestCmd
+      = "test" UnaryOp bashword -- unary
+      | "test" bashword BinaryOp bashword -- binary
+      | "[" UnaryOp bashword "]" -- unaryBracket
+      | "[" bashword BinaryOp bashword "]" -- binaryBracket
   FindCmd  = "find"  bashword+
   LsCmd    = "ls"    options? bashword*
   CatCmd   = "cat" bashword*

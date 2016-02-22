@@ -82,8 +82,23 @@ var source2sourceSemantics = {
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
-  Conditional_binary: function(_ob, bw1, binop, bw2, _cb) {
+  TestCmd_unary: function(_, unop, bw) {
+    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  },
+  TestCmd_binary: function(_, bw1, binop, bw2) {
     return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  },
+  TestCmd_unaryBracket: function(_ob, unop, bw, _cb) {
+    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  },
+  TestCmd_binaryBracket: function(_ob, bw1, binop, bw2, _cb) {
+    return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  },
+  Conditional_test: function(sc) {
+    var ret = sc.toJS(0);
+    if (!globalInclude && ret.indexOf('test') > -1)
+      ret = ret.replace('test(', 'shell.test(')
+    return ret;
   },
   Conditional_cmd: function(sc) {
     return sc.toJS(0) + '.code === 0';

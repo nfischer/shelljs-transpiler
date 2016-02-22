@@ -136,6 +136,39 @@ assert.equal(s(m).toJS(0), "while (x !== 1) {\n" +
                            "}\n" +
                            "pwd();\n");
 
+m = bash.match("if [ -f foo.txt ]; then\n" +
+               "  echo hi\n" +
+               "fi\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "if (test('-f', 'foo.txt')) {\n" +
+                           "  echo('hi');\n" +
+                           "}\n");
+
+m = bash.match("if test -f foo.txt; then\n" +
+               "  echo hi\n" +
+               "fi\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "if (test('-f', 'foo.txt')) {\n" +
+                           "  echo('hi');\n" +
+                           "}\n");
+
+m = bash.match("if test foo == foo.txt; then\n" +
+               "  echo hi\n" +
+               "fi\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "if ('foo' === 'foo.txt') {\n" +
+                           "  echo('hi');\n" +
+                           "}\n");
+
+m = bash.match("if [ foo -ne 'foo.txt' ]; then\n" +
+               "  echo hi\n" +
+               "fi\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "if ('foo' !== 'foo.txt') {\n" +
+                           "  echo('hi');\n" +
+                           "}\n");
+
+
 
 config.silent = false;
 echo('All tests passed!');
