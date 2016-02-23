@@ -31,7 +31,9 @@ function ind(ind_count) {
 }
 
 function env(str) {
-  if (str === str.toUpperCase())
+  if (str === '?')
+    return (globalInclude ? '' : 'shell.') + 'error()';
+  else if (str === str.toUpperCase())
     return (globalInclude ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
   else
     return str;
@@ -262,17 +264,10 @@ var source2sourceSemantics = {
   // TODO(nate): make this preserve leading whitespace
   comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
   Bashword: function(val) { return val.toJS(this.args.indent); },
-  reference_errCode: function(_) { return 'error()'; },
   reference_simple: function(_, id) {
     return env(id.interval.contents);
   },
-  reference_smart: function(_ob, id, _cb) {
-    return env(id.interval.contents);
-  },
-  reference_quotesimple: function(_oq, id, _cq) {
-    return env(id.interval.contents);
-  },
-  reference_quotesmart: function(_oq, id, _cq) {
+  reference_wrapped: function(_ob, id, _cb) {
     return env(id.interval.contents);
   },
   bareWord: function(_) { return "'" + this.interval.contents + "'"; },

@@ -175,14 +175,13 @@ Bash {
       | "\"`" Cmd "`\""
 
   reference
-      = reference_errCode
-      | "$" id -- simple
-      | "${" id "}" -- smart
-      | "\"$" id "\"" -- quotesimple
-      | "\"${" id "}\"" -- quotesmart
+      = "$" id -- simple
+      | reference_wrapped
 
-  reference_errCode
-      = "$?" | "${?}" | "\"$?\"" | "\"${?}\""
+  reference_wrapped
+      = "${" id "}"
+      | "\"$" id "\""
+      | "\"${" id "}\""
 
   number
       = digit+
@@ -215,7 +214,7 @@ Bash {
   Assignment
       = ("local " | "readonly " | "export ")? idEqual Bashword?
   idEqual = id "="
-  id = (~keyword alnum+)
+  id = (~keyword alnum+) | "?"
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon = (";" | "\n")+
@@ -232,6 +231,7 @@ textarea {
 </head>
 <body>
 <h1>Bash to ShellJS Translator</h1>
+<p>Like it? Check out the project <a href="https://github.com/nfischer/BashToShellJS">on Github</a></p>
 <div>
 <textarea id="bashcode" spellcheck="false" cols="80" rows="20" wrap="off">
 echo "Type something in this box, or paste in a simple shell script"
