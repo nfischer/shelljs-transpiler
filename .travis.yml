@@ -1,0 +1,12 @@
+language: node
+sudo: false
+os: linux
+
+before_script:
+  - npm install -g gulp-cli
+  - npm install
+
+script:
+  - npm test
+  - gulp
+  - git diff --quiet # make sure no files have changed

@@ -168,14 +168,13 @@ Bash {
       | "\"`" Cmd "`\""
 
   reference
-      = reference_errCode
-      | "$" id -- simple
-      | "${" id "}" -- smart
-      | "\"$" id "\"" -- quotesimple
-      | "\"${" id "}\"" -- quotesmart
+      = "$" id -- simple
+      | reference_wrapped
 
-  reference_errCode
-      = "$?" | "${?}" | "\"$?\"" | "\"${?}\""
+  reference_wrapped
+      = "${" id "}"
+      | "\"$" id "\""
+      | "\"${" id "}\""
 
   number
       = digit+
@@ -208,7 +207,7 @@ Bash {
   Assignment
       = ("local " | "readonly " | "export ")? idEqual Bashword?
   idEqual = id "="
-  id = (~keyword alnum+)
+  id = (~keyword alnum+) | "?"
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon = (";" | "\n")+
