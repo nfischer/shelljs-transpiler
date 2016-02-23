@@ -263,18 +263,54 @@ var source2sourceSemantics = {
   options: function(_minus, _letters) { return "'" + this.interval.contents + "'"; },
   // TODO(nate): make this preserve leading whitespace
   comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
-  Bashword: function(val) { return val.toJS(this.args.indent); },
-  reference_simple: function(_, id) {
-    return env(id.interval.contents);
+  Bashword: function(val) {
+    return val.toJS(0);
   },
-  reference_wrapped: function(_ob, id, _cb) {
-    return env(id.interval.contents);
+  reference: function(_) {
+    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''));
   },
-  bareWord: function(_) { return "'" + this.interval.contents + "'"; },
+  notDoubleQuote_escape: function(_, _2) { return this.interval.contents; },
+  bareWord: function(w) {
+    var ret = '';
+    w.toJS(0).forEach(function (atom) {
+      if (atom.substr(0, 2) === '$$') { // a hack
+        // This is a variable
+        ret += "' + " + atom.slice(2) + " + '";
+      } else {
+        // This is just a character in the bareWord
+        ret += atom;
+      }
+    });
+    // Clean it up
+    // ret = ret.replace(/\\"/g,  '"').replace(/'/g, "\\'");
+    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+    return ret;
+  },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
   singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
   doubleString: function(_sq, val, _eq) {
-    return "'" + val.interval.contents.replace(/\\"/g,  '"').replace(/'/g, "\\'") + "'";
+    var ret = '';
+    val.toJS(0).forEach(function (atom) {
+      if (atom.substr(0, 2) === '$$') { // a hack
+        // This is a variable
+        ret += "' + " + atom.slice(2) + " + '";
+      } else {
+        // This is just a character in the string
+        if (atom === '\\"')
+          ret += '"';
+        else if (atom === "'")
+          ret += "\\'";
+        else
+          ret += atom;
+      }
+    });
+    // Clean it up
+    // ret = ret.replace(/\\"/g,  '"').replace(/'/g, "\\'");
+    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+    return ret;
+  },
+  any: function(_) {
+    return this.interval.contents;
   },
   id: function(_) {
     return env(this.interval.contents);

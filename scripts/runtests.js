@@ -340,5 +340,26 @@ assert.equal(s(m).toJS(0), "env.BASH = '/bin/sh';\n" +
                            "env.NEWENV = 'foo';\n" +
                            "echo(env.PATH);\n");
 
+// Really weird variable concatentation
+m = bash.match("echo hi there$foo $bar ${foo}hi${bar}\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "echo('hi', 'there' + foo, bar, foo + 'hi' + bar);\n");
+
+m = bash.match('echo "${baz}${bar}"\n' +
+               'echo "foo\\nbar"\n' +
+               'echo "foo\\tbar"\n' +
+               'echo "foo\'bar"\n' +
+               'echo "foo\\"bar"\n' +
+               'echo "${k}"\n');
+
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "echo(baz + bar);\n" +
+                           "echo('foo\\nbar');\n" +
+                           "echo('foo\\tbar');\n" +
+                           "echo('foo\\\'bar');\n" +
+                           "echo('foo\"bar');\n" +
+                           "echo(k);\n");
+
+
 config.silent = false;
 echo('All tests passed!');

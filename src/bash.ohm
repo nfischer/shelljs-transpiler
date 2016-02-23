@@ -156,9 +156,8 @@ Bash {
 
   Bashword
       = Call
-      | reference
-      | number
       | stringLiteral
+      | number
       | bareWord
 
   Call
@@ -168,19 +167,14 @@ Bash {
       | "\"`" Cmd "`\""
 
   reference
-      = "$" id -- simple
-      | reference_wrapped
-
-  reference_wrapped
-      = "${" id "}"
-      | "\"$" id "\""
-      | "\"${" id "}\""
+      = "${" id "}" -- wrapped
+      | "$" id -- simple
 
   number
       = digit+
 
   bareWord
-      = (~badchars any)+
+      = (~badchars (reference | any))+
 
   keyword
       = keywordRoot ~alnum
@@ -200,7 +194,7 @@ Bash {
       | "\\" any -- escape
 
   notDoubleQuote
-      = (~("\"" | "\\") any)
+      = (~("\"" | "\\") (reference | any))
       | "\\" any -- escape
 
   badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")"
