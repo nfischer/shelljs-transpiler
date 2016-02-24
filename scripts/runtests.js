@@ -340,5 +340,64 @@ assert.equal(s(m).toJS(0), "env.BASH = '/bin/sh';\n" +
                            "env.NEWENV = 'foo';\n" +
                            "echo(env.PATH);\n");
 
+// Really weird variable concatentation
+m = bash.match("echo hi there$foo $bar ${foo}hi${bar}\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "echo('hi', 'there' + foo, bar, foo + 'hi' + bar);\n");
+
+m = bash.match('echo "${baz}${bar}"\n' +
+               'echo "foo\\nbar"\n' +
+               'echo "foo\\tbar"\n' +
+               'echo "foo\'bar"\n' +
+               'echo "foo\\"bar"\n' +
+               'echo "${k}"\n');
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "echo(baz + bar);\n" +
+                           "echo('foo\\nbar');\n" +
+                           "echo('foo\\tbar');\n" +
+                           "echo('foo\\\'bar');\n" +
+                           "echo('foo\"bar');\n" +
+                           "echo(k);\n");
+
+m = bash.match("sed 's/foo/bar/' foo.txt bar.txt\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "sed(/foo/, 'bar', 'foo.txt', 'bar.txt');\n");
+
+// Sed supports double-quotes
+m = bash.match("sed \"s/foo/bar/\" foo.txt bar.txt\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "sed(/foo/, 'bar', 'foo.txt', 'bar.txt');\n");
+
+// TestCmd tests
+m = bash.match("[ -f file.txt ]\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "test('-f', 'file.txt');\n");
+
+m = bash.match("test -f file.txt\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "test('-f', 'file.txt');\n");
+
+m = bash.match("[ ! -f file.txt ]\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "!test('-f', 'file.txt');\n");
+
+m = bash.match("test ! -f file.txt\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "!test('-f', 'file.txt');\n");
+
+m = bash.match("[ ! $x = $y ]\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "!(x === y);\n");
+
+m = bash.match("echo\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "echo();\n");
+
+// Variable names can have weird-ish characters
+m = bash.match("MY_var123='hi'\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "var MY_var123 = 'hi';\n");
+
+
 config.silent = false;
 echo('All tests passed!');

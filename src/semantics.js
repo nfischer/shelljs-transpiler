@@ -93,17 +93,25 @@ var source2sourceSemantics = {
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
-  TestCmd_unary: function(_, unop, bw) {
-    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  TestCmd_unary: function(_, negate, unop, bw) {
+    return negate.interval.contents +
+        "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
   },
-  TestCmd_binary: function(_, bw1, binop, bw2) {
-    return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  TestCmd_binary: function(_, negate, bw1, binop, bw2) {
+    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+    return negate.interval.contents
+        ? "!(" + ret + ")"
+        : ret;
   },
-  TestCmd_unaryBracket: function(_ob, unop, bw, _cb) {
-    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  TestCmd_unaryBracket: function(_ob, negate, unop, bw, _cb) {
+    return negate.interval.contents +
+        "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
   },
-  TestCmd_binaryBracket: function(_ob, bw1, binop, bw2, _cb) {
-    return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  TestCmd_binaryBracket: function(_ob, negate, bw1, binop, bw2, _cb) {
+    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+    return negate.interval.contents
+        ? "!(" + ret + ")"
+        : ret;
   },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
@@ -193,13 +201,17 @@ var source2sourceSemantics = {
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
   },
-  CdCmd: function(_, arg) { return "cd('" + arg.interval.contents + "')"; },
+  CdCmd: function(_, arg) {
+    return "cd(" +
+        (arg.interval.contents ? arg.toJS(0) : '') +
+        ")";
+  },
   PwdCmd: function(_) { return 'pwd()'; },
   LsCmd: function(_, opts, args) {
     return 'ls(' + cmd_helper(opts, args, this.args.indent) + ')';
   },
   FindCmd: function(_, args) {
-    return "find('" + args.interval.contents + "')";
+    return "find(" + cmd_helper(null, args, this.args.indent) + ")";
   },
   BasicCmd: function(cname, opts, args) {
     return cname.interval.contents.trim() + '(' + cmd_helper(opts, args, this.args.indent) + ')';
@@ -208,7 +220,7 @@ var source2sourceSemantics = {
     return 'cat(' + cmd_helper(null, args, this.args.indent) + ')';
   },
   WhichCmd: function(_, arg) {
-    return 'which(' + arg.interval.contents + ')';
+    return 'which(' + arg.toJS(0) + ')';
   },
   EchoCmd: function(_, args) {
     return 'echo(' + cmd_helper(null, args, this.args.indent) + ')';
@@ -244,10 +256,10 @@ var source2sourceSemantics = {
         this.interval.contents.replace(/'/g, "\\'") +
         "')";
   },
-  SedCmd: function(_prefix, sRegex, file) {
+  SedCmd: function(_prefix, sRegex, files) {
     return "sed(" +
         sRegex.toJS(0) +
-        (file.interval.contents ? ', ' + file.toJS(0) : '') +
+        (files.interval.contents ? ', ' + files.toJS(0).join(', ') : '') +
         ')';
   },
   sedRegex: function(_prefix, pat, _sl1, sub, _sl2, g, _qu) {
@@ -263,18 +275,54 @@ var source2sourceSemantics = {
   options: function(_minus, _letters) { return "'" + this.interval.contents + "'"; },
   // TODO(nate): make this preserve leading whitespace
   comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
-  Bashword: function(val) { return val.toJS(this.args.indent); },
-  reference_simple: function(_, id) {
-    return env(id.interval.contents);
+  Bashword: function(val) {
+    return val.toJS(0);
   },
-  reference_wrapped: function(_ob, id, _cb) {
-    return env(id.interval.contents);
+  reference: function(_) {
+    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''));
   },
-  bareWord: function(_) { return "'" + this.interval.contents + "'"; },
+  notDoubleQuote_escape: function(_, _2) { return this.interval.contents; },
+  bareWord: function(w) {
+    var ret = '';
+    w.toJS(0).forEach(function (atom) {
+      if (atom.substr(0, 2) === '$$') { // a hack
+        // This is a variable
+        ret += "' + " + atom.slice(2) + " + '";
+      } else {
+        // This is just a character in the bareWord
+        ret += atom;
+      }
+    });
+    // Clean it up
+    // ret = ret.replace(/\\"/g,  '"').replace(/'/g, "\\'");
+    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+    return ret;
+  },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
   singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
   doubleString: function(_sq, val, _eq) {
-    return "'" + val.interval.contents.replace(/\\"/g,  '"').replace(/'/g, "\\'") + "'";
+    var ret = '';
+    val.toJS(0).forEach(function (atom) {
+      if (atom.substr(0, 2) === '$$') { // a hack
+        // This is a variable
+        ret += "' + " + atom.slice(2) + " + '";
+      } else {
+        // This is just a character in the string
+        if (atom === '\\"')
+          ret += '"';
+        else if (atom === "'")
+          ret += "\\'";
+        else
+          ret += atom;
+      }
+    });
+    // Clean it up
+    // ret = ret.replace(/\\"/g,  '"').replace(/'/g, "\\'");
+    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+    return ret;
+  },
+  any: function(_) {
+    return this.interval.contents;
   },
   id: function(_) {
     return env(this.interval.contents);

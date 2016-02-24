@@ -120,16 +120,24 @@ Bash {
   BasicCmd = BasicName options? Bashword+
   CdCmd    = "cd" Bashword?
   PwdCmd   = "pwd"
+
   TestCmd
-      = "test " UnaryOp Bashword           -- unary
-      | "test " Bashword BinaryOp Bashword -- binary
-      | "[" UnaryOp Bashword "]"           -- unaryBracket
-      | "[" Bashword BinaryOp Bashword "]" -- binaryBracket
+      = "test " "!"? UnaryOp Bashword               -- unary
+      | "test " "!"? Bashword BinaryOp Bashword     -- binary
+      | TestCmd_unaryBracket
+      | TestCmd_binaryBracket
+  TestCmd_unaryBracket
+      = "[[" "!"? UnaryOp Bashword "]]"
+      | "[" "!"? UnaryOp Bashword "]"
+  TestCmd_binaryBracket
+      = "[[" "!"? Bashword BinaryOp Bashword "]]"
+      | "[" "!"? Bashword BinaryOp Bashword "]"
+
   FindCmd  = "find "  Bashword+
   LsCmd    = "ls"     options? Bashword*
   CatCmd   = "cat"    Bashword*
   WhichCmd = "which " Bashword
-  EchoCmd  = "echo "  Bashword+
+  EchoCmd  = "echo"   Bashword*
   PushdCmd = "pushd"  options? Bashword?
   PopdCmd  = "popd"   options? Bashword?
   DirsCmd  = "dirs"   (options | Bashword)?
@@ -137,10 +145,12 @@ Bash {
   ExitCmd  = "exit"   ("-"? digit+)?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
-  SedCmd   = "sed "   sedRegex Bashword?
+  SedCmd   = "sed "   sedRegex Bashword*
   ExecCmd  = CmdName Arglist
 
-  sedRegex = "'s/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'"
+  sedRegex
+      = "'s/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'"
+      | "\"s/" (~"/" ~"\"" any)* "/" (~"/" ~"\"" any)* ("/" "g"?)? "\""
   BasicName
       = "cp "
       | "rm "
@@ -152,13 +162,12 @@ Bash {
   Arglist = Bashword*
   NullCmd = ""
   comment = space* ("#" ~"!") (~"\n" any)*
-  options = "-" letter*
+  options = "-" letter+
 
   Bashword
       = Call
-      | reference
-      | number
       | stringLiteral
+      | number
       | bareWord
 
   Call
@@ -168,19 +177,14 @@ Bash {
       | "\"`" Cmd "`\""
 
   reference
-      = "$" id -- simple
-      | reference_wrapped
-
-  reference_wrapped
-      = "${" id "}"
-      | "\"$" id "\""
-      | "\"${" id "}\""
+      = "${" id "}" -- wrapped
+      | "$" id -- simple
 
   number
       = digit+
 
   bareWord
-      = (~badchars any)+
+      = (~badchars (reference | any))+
 
   keyword
       = keywordRoot ~alnum
@@ -200,14 +204,14 @@ Bash {
       | "\\" any -- escape
 
   notDoubleQuote
-      = (~("\"" | "\\") any)
+      = (~("\"" | "\\") (reference | any))
       | "\\" any -- escape
 
   badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")"
   Assignment
       = ("local " | "readonly " | "export ")? idEqual Bashword?
   idEqual = id "="
-  id = (~keyword alnum+) | "?"
+  id = (~keyword (alnum | "_")+) | "?"
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon = (";" | "\n")+
