@@ -129,19 +129,20 @@ var source2sourceSemantics = {
   GreaterThan: function(_) { return '>'; },
   LessThanEq: function(_) { return '<='; },
   GreaterThanEq: function(_) { return '>='; },
-  Script: function(prefix, shebang, _, scriptcode) {
+  Script: function(shebang, _nl, space, scriptcode) {
     // Always reset the global environment to empty
     globalEnvironment = {};
-    return prefix.toJS(this.args.indent).join('') +
-        (this.interval.contents.match(/^(\s)*$/)
+    return (this.interval.contents.match(/^(\s)*$/)
           ? ''
-          : shebang.toJS(this.args.indent) + scriptcode.toJS(this.args.indent));
+          : shebang.toJS(this.args.indent) +
+        space.interval.contents +
+        scriptcode.toJS(this.args.indent));
   },
   Shebang: function(_a, _b, _c) {
     if (this.interval.contents)
       return "#!/usr/bin/env node\n" +
           (globalInclude ? "require('shelljs/global');" : "var shell = require('shelljs');") +
-          "\n\n";
+          "\n";
     else {
       return '';
     }

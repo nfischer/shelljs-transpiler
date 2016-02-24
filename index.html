@@ -46,7 +46,7 @@ button.selector {
 <script type="text/ohm-js">
 Bash {
   Script
-      = (comment | allwhitespace)* (Shebang allwhitespace+)? ScriptCode?
+      = (Shebang "\n")? allwhitespace* ScriptCode?
   ScriptCode = Cmd | NullCmd
   Shebang = "#!" (~"sh" any)* "sh"
   Cmd = SequenceCmd
@@ -207,7 +207,7 @@ Bash {
   CmdName = (~keyword Bashword)
   Arglist = Bashword*
   NullCmd = ""
-  comment = space* ("#" ~"!") (~"\n" any)*
+  comment = space* "#" (~"\n" any)*
   options = "-" letter+
 
   Bashword
@@ -280,7 +280,6 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
-  console.log('hi');
   globalInclude = document.getElementById('checkbox1').checked
   var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
