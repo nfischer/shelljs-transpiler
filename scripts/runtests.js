@@ -3,7 +3,7 @@
 'use strict';
 
 var assert = require('assert');
-var ohm = require('ohm-js');
+var ohm = require('../lib/ohm/dist/ohm');
 var fs = require('fs');
 var path = require('path');
 var semantics = require('../src/semantics');
