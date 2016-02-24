@@ -4,10 +4,11 @@ BashToShellJS
 [![Build Status](https://travis-ci.org/nfischer/BashToShellJS.svg?branch=master)](https://travis-ci.org/nfischer/BashToShellJS)
 
 > *"Say goodbye to those gnarly Bash scripts!"
-> -- @arturadib, ShellJS README*
+> -- @arturadib, [ShellJS
+> README](https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs)*
 
 This is a source-to-source translator from Bash to
-[ShellJS](https://github.com/shelljs/shelljs). [Try it out live on the
+[ShellJS](https://github.com/shelljs/shelljs). Try it out [live on the
 web!](https://nfischer.github.io/BashToShellJS/).
 
 You can also clone this repository to translate files on your local machine
