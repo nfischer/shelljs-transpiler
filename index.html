@@ -131,7 +131,7 @@ Bash {
       | NoSemicolonCmd semicolon -- noscNull
       | Cmd semicolon -- null
 
-  PipeCmd = Cmd "|" Cmd
+  PipeCmd = Cmd "|" allwhitespace* Cmd
 
   CmdWithComment
       = SimpleCmd comment

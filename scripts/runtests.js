@@ -398,6 +398,11 @@ m = bash.match("MY_var123='hi'\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "var MY_var123 = 'hi';\n");
 
+// Multi-line pipes
+m = bash.match("echo hi |\ncat |\ncat\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "echo('hi')\n  .cat()\n  .cat();\n");
+
 
 config.silent = false;
 echo('All tests passed!');

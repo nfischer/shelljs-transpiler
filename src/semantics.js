@@ -180,8 +180,10 @@ var source2sourceSemantics = {
     ret += c2.toJS(secondIndent);
     return ret;
   },
-  PipeCmd: function(c1, _, c2) {
+  PipeCmd: function(c1, _, spaces, c2) {
+    var newlines = spaces.interval.contents.replace(/[^\n]/g, '');
     return c1.toJS(this.args.indent) +
+        (newlines ? newlines + ind(this.args.indent+1) : '') +
         '.' +
         c2.toJS(0).replace(/^shell\./, '');
   },
