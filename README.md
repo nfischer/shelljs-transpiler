@@ -3,13 +3,20 @@ BashToShellJS
 
 [![Build Status](https://travis-ci.org/nfischer/BashToShellJS.svg?branch=master)](https://travis-ci.org/nfischer/BashToShellJS)
 
-This is a source-to-source translator from Bash to
-[ShellJS](https://github.com/shelljs/shelljs). You can **try out the translator
-live in your browser** at
-[https://nfischer.github.io/BashToShellJS/](https://nfischer.github.io/BashToShellJS/).
+> *"Say goodbye to those gnarly Bash scripts!"
+> -- @arturadib, ShellJS README*
 
-You can also download the npm package to translate files on your local machine
-directly with the `transpile.js` executable.
+This is a source-to-source translator from Bash to
+[ShellJS](https://github.com/shelljs/shelljs). [Try it out live on the
+web!](https://nfischer.github.io/BashToShellJS/).
+
+You can also clone this repository to translate files on your local machine
+directly with the `transpile.js` executable:
+
+```Bash
+# Make sure to use --recursive to download the submodule
+$ git clone --recursive https://github.com/nfischer/BashToShellJS.git
+```
 
 Building the project
 --------------------
@@ -21,7 +28,9 @@ I wrote my own tool to effectively do the replacement.
 To build the project with this custom step, you only need to run:
 
 ```Bash
+$ git clone --recursive https://github.com/nfischer/BashToShellJS.git
+$ cd BashToShellJS/
 $ npm install -g gulp-cli
 $ npm install
-$ gulp # the actual build step
+$ gulp # This compiles index.html from src/index.generator.html
 ```
