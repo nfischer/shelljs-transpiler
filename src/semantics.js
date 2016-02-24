@@ -129,19 +129,20 @@ var source2sourceSemantics = {
   GreaterThan: function(_) { return '>'; },
   LessThanEq: function(_) { return '<='; },
   GreaterThanEq: function(_) { return '>='; },
-  Script: function(prefix, shebang, _, scriptcode) {
+  Script: function(shebang, _nl, space, scriptcode) {
     // Always reset the global environment to empty
     globalEnvironment = {};
-    return prefix.toJS(this.args.indent).join('') +
-        (this.interval.contents.match(/^(\s)*$/)
+    return (this.interval.contents.match(/^(\s)*$/)
           ? ''
-          : shebang.toJS(this.args.indent) + scriptcode.toJS(this.args.indent));
+          : shebang.toJS(this.args.indent) +
+        space.interval.contents +
+        scriptcode.toJS(this.args.indent));
   },
   Shebang: function(_a, _b, _c) {
     if (this.interval.contents)
       return "#!/usr/bin/env node\n" +
           (globalInclude ? "require('shelljs/global');" : "var shell = require('shelljs');") +
-          "\n\n";
+          "\n";
     else {
       return '';
     }
@@ -180,8 +181,10 @@ var source2sourceSemantics = {
     ret += c2.toJS(secondIndent);
     return ret;
   },
-  PipeCmd: function(c1, _, c2) {
+  PipeCmd: function(c1, _, spaces, c2) {
+    var newlines = spaces.interval.contents.replace(/[^\n]/g, '');
     return c1.toJS(this.args.indent) +
+        (newlines ? newlines + ind(this.args.indent+1) : '') +
         '.' +
         c2.toJS(0).replace(/^shell\./, '');
   },
@@ -254,6 +257,11 @@ var source2sourceSemantics = {
   ExecCmd: function(firstword, args) {
     return "exec('" +
         this.interval.contents.replace(/'/g, "\\'") +
+        "')";
+  },
+  SetCmd: function(_, opts) {
+    return "set('" +
+        opts.interval.contents +
         "')";
   },
   SedCmd: function(_prefix, sRegex, files) {

@@ -1,6 +1,6 @@
 Bash {
   Script
-      = (comment | allwhitespace)* (Shebang allwhitespace+)? ScriptCode?
+      = (Shebang "\n")? allwhitespace* ScriptCode?
   ScriptCode = Cmd | NullCmd
   Shebang = "#!" (~"sh" any)* "sh"
   Cmd = SequenceCmd
@@ -85,7 +85,7 @@ Bash {
       | NoSemicolonCmd semicolon -- noscNull
       | Cmd semicolon -- null
 
-  PipeCmd = Cmd "|" Cmd
+  PipeCmd = Cmd "|" allwhitespace* Cmd
 
   CmdWithComment
       = SimpleCmd comment
@@ -114,6 +114,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | SetCmd
       | SedCmd
       | ExecCmd
 
@@ -145,6 +146,7 @@ Bash {
   ExitCmd  = "exit"   ("-"? digit+)?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
+  SetCmd   = "set "   modOptions
   SedCmd   = "sed "   sedRegex Bashword*
   ExecCmd  = CmdName Arglist
 
@@ -161,8 +163,9 @@ Bash {
   CmdName = (~keyword Bashword)
   Arglist = Bashword*
   NullCmd = ""
-  comment = space* ("#" ~"!") (~"\n" any)*
+  comment = space* "#" (~"\n" any)*
   options = "-" letter+
+  modOptions = ("-" |"+" ) letter+
 
   Bashword
       = Call

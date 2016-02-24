@@ -41,12 +41,12 @@ button.selector {
   position: relative;
 }
 </style>
-<script src="node_modules/ohm-js/dist/ohm.js"></script>
+<script src="lib/ohm/dist/ohm.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/ohm-js">
 Bash {
   Script
-      = (comment | allwhitespace)* (Shebang allwhitespace+)? ScriptCode?
+      = (Shebang "\n")? allwhitespace* ScriptCode?
   ScriptCode = Cmd | NullCmd
   Shebang = "#!" (~"sh" any)* "sh"
   Cmd = SequenceCmd
@@ -131,7 +131,7 @@ Bash {
       | NoSemicolonCmd semicolon -- noscNull
       | Cmd semicolon -- null
 
-  PipeCmd = Cmd "|" Cmd
+  PipeCmd = Cmd "|" allwhitespace* Cmd
 
   CmdWithComment
       = SimpleCmd comment
@@ -160,6 +160,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | SetCmd
       | SedCmd
       | ExecCmd
 
@@ -191,6 +192,7 @@ Bash {
   ExitCmd  = "exit"   ("-"? digit+)?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
+  SetCmd   = "set "   modOptions
   SedCmd   = "sed "   sedRegex Bashword*
   ExecCmd  = CmdName Arglist
 
@@ -207,8 +209,9 @@ Bash {
   CmdName = (~keyword Bashword)
   Arglist = Bashword*
   NullCmd = ""
-  comment = space* ("#" ~"!") (~"\n" any)*
+  comment = space* "#" (~"\n" any)*
   options = "-" letter+
+  modOptions = ("-" |"+" ) letter+
 
   Bashword
       = Call
@@ -280,7 +283,6 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
-  console.log('hi');
   globalInclude = document.getElementById('checkbox1').checked
   var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
@@ -323,6 +325,7 @@ $('document').ready(function() {
 <div class="code-box">
 <h2>Shell Input Code</h2>
 <textarea id="bashcode" spellcheck="false" cols="80" rows="16" wrap="off">
+#!/bin/bash
 echo "Type something in this box, or paste in a simple shell script"</textarea>
 <div class="container">
 <input type="button" class="selector" value="Select this script" onclick="selectAll('bashcode')" id="button1">
