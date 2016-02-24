@@ -259,6 +259,11 @@ var source2sourceSemantics = {
         this.interval.contents.replace(/'/g, "\\'") +
         "')";
   },
+  SetCmd: function(_, opts) {
+    return "set('" +
+        opts.interval.contents +
+        "')";
+  },
   SedCmd: function(_prefix, sRegex, files) {
     return "sed(" +
         sRegex.toJS(0) +

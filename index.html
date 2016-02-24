@@ -160,6 +160,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | SetCmd
       | SedCmd
       | ExecCmd
 
@@ -191,6 +192,7 @@ Bash {
   ExitCmd  = "exit"   ("-"? digit+)?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
+  SetCmd   = "set "   modOptions
   SedCmd   = "sed "   sedRegex Bashword*
   ExecCmd  = CmdName Arglist
 
@@ -209,6 +211,7 @@ Bash {
   NullCmd = ""
   comment = space* "#" (~"\n" any)*
   options = "-" letter+
+  modOptions = ("-" |"+" ) letter+
 
   Bashword
       = Call
@@ -322,6 +325,7 @@ $('document').ready(function() {
 <div class="code-box">
 <h2>Shell Input Code</h2>
 <textarea id="bashcode" spellcheck="false" cols="80" rows="16" wrap="off">
+#!/bin/bash
 echo "Type something in this box, or paste in a simple shell script"</textarea>
 <div class="container">
 <input type="button" class="selector" value="Select this script" onclick="selectAll('bashcode')" id="button1">
