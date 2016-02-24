@@ -2,25 +2,54 @@
 <html>
 <head>
 <title>Bash to ShellJS Translator</title>
+<style>
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+body, h1, p {
+  text-align: center;
+  font-family: Impact, Charcoal, sans-serif;
+}
+h2 {
+  font-style: italic;
+}
+textarea {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  float: left;
+  display: inline-block;
+  background: white;
+}
+#checkbox1 {
+  text-align: center;
+}
+.code-box {
+  height: auto;
+  display: table;
+  width: auto;
+  display: inline-block;
+  margin: 10px;
+}
+.container {
+  height: 100%;
+  float: right;
+  margin-top: 20px;
+  margin-left: 10px;
+}
+button.selector {
+  position: relative;
+}
+</style>
 <script src="node_modules/ohm-js/dist/ohm.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/ohm-js" src="src/bash.ohm"></script>
 <script src="src/semantics.js"></script>
-<style>
-textarea {
-  overflow-x: scroll;
-  overflow-y: scroll;
+<script>
+function selectAll(id) {
+  document.getElementById(id).select();
 }
-</style>
-</head>
-<body>
-<h1>Bash to ShellJS Translator</h1>
-<p>Like it? Check out the project <a href="https://github.com/nfischer/BashToShellJS">on Github</a></p>
-<div>
-<textarea id="bashcode" spellcheck="false" cols="80" rows="20" wrap="off">
-echo "Type something in this box, or paste in a simple shell script"
-</textarea>
-<input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace
+</script>
 <script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
@@ -31,6 +60,7 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
+  console.log('hi');
   globalInclude = document.getElementById('checkbox1').checked
   var script = document.getElementById('bashcode').value.trim() + '\n';
   var m = bash.match(script);
@@ -42,34 +72,56 @@ function loadTranslatedText() {
     document.getElementById('jscode').innerHTML = replacementText;
   }
 }
-$('#bashcode').keyup(loadTranslatedText);
-$('#checkbox1').change(loadTranslatedText);
-$('document').ready(loadTranslatedText);
-var timeout;
-$('#bashcode').keypress(function() {
-  if(timeout) {
-    clearTimeout(timeout);
-    timeout = null;
-  }
-  timeout = setTimeout(function() {
-    if (errMessage) {
-      console.error(errMessage);
-      warned = true;
+$('document').ready(function() {
+  $('#bashcode').keyup(loadTranslatedText);
+  $('#checkbox1').change(loadTranslatedText);
+  var timeout;
+  $('#bashcode').keypress(function() {
+    if(timeout) {
+      clearTimeout(timeout);
+      timeout = null;
     }
-  }, 3000);
+    timeout = setTimeout(function() {
+      if (errMessage) {
+        console.error(errMessage);
+        warned = true;
+      }
+    }, 3000);
+  });
+  loadTranslatedText();
 });
 </script>
-
+</head>
+<body>
+<h1>Bash to ShellJS Translator</h1>
+<p>Like it? Check out the project <a href="https://github.com/nfischer/BashToShellJS">on Github</a></p>
+<input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace <i><a href="http://documentup.com/shelljs/shelljs#global-vs-local">What is this?</a></i>
+<br>
+<table>
+<tr>
+<td>
+<div class="code-box">
+<h2>Shell Input Code</h2>
+<textarea id="bashcode" spellcheck="false" cols="80" rows="16" wrap="off">
+echo "Type something in this box, or paste in a simple shell script"</textarea>
+<div class="container">
+<input type="button" class="selector" value="Select this script" onclick="selectAll('bashcode')" id="button1">
 </div>
-<div>
-<textarea id="jscode" spellcheck="false" cols="80" rows="20" wrap="off" readonly>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="code-box">
+<h2>Generated ShellJS Output</h2>
+<textarea id="jscode" spellcheck="false" cols="80" rows="16" wrap="off" readonly>
 </textarea>
-<input type="button" value="Select this script" onclick="selectAll()" id="button1">
+<div class="container">
+<input type="button" class="selector" value="Select this script" onclick="selectAll('jscode')" id="button2">
 </div>
-<script>
-function selectAll() {
-  document.getElementById('jscode').select();
-}
-</script>
+</div>
+</td>
+</tr>
+</table>
 </body>
 </html>

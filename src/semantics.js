@@ -93,17 +93,25 @@ var source2sourceSemantics = {
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
-  TestCmd_unary: function(_, unop, bw) {
-    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  TestCmd_unary: function(_, negate, unop, bw) {
+    return negate.interval.contents +
+        "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
   },
-  TestCmd_binary: function(_, bw1, binop, bw2) {
-    return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  TestCmd_binary: function(_, negate, bw1, binop, bw2) {
+    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+    return negate.interval.contents
+        ? "!(" + ret + ")"
+        : ret;
   },
-  TestCmd_unaryBracket: function(_ob, unop, bw, _cb) {
-    return "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
+  TestCmd_unaryBracket: function(_ob, negate, unop, bw, _cb) {
+    return negate.interval.contents +
+        "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
   },
-  TestCmd_binaryBracket: function(_ob, bw1, binop, bw2, _cb) {
-    return bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+  TestCmd_binaryBracket: function(_ob, negate, bw1, binop, bw2, _cb) {
+    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
+    return negate.interval.contents
+        ? "!(" + ret + ")"
+        : ret;
   },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
@@ -193,13 +201,17 @@ var source2sourceSemantics = {
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
   },
-  CdCmd: function(_, arg) { return "cd('" + arg.interval.contents + "')"; },
+  CdCmd: function(_, arg) {
+    return "cd(" +
+        (arg.interval.contents ? arg.toJS(0) : '') +
+        ")";
+  },
   PwdCmd: function(_) { return 'pwd()'; },
   LsCmd: function(_, opts, args) {
     return 'ls(' + cmd_helper(opts, args, this.args.indent) + ')';
   },
   FindCmd: function(_, args) {
-    return "find('" + args.interval.contents + "')";
+    return "find(" + cmd_helper(null, args, this.args.indent) + ")";
   },
   BasicCmd: function(cname, opts, args) {
     return cname.interval.contents.trim() + '(' + cmd_helper(opts, args, this.args.indent) + ')';
@@ -208,7 +220,7 @@ var source2sourceSemantics = {
     return 'cat(' + cmd_helper(null, args, this.args.indent) + ')';
   },
   WhichCmd: function(_, arg) {
-    return 'which(' + arg.interval.contents + ')';
+    return 'which(' + arg.toJS(0) + ')';
   },
   EchoCmd: function(_, args) {
     return 'echo(' + cmd_helper(null, args, this.args.indent) + ')';
@@ -244,10 +256,10 @@ var source2sourceSemantics = {
         this.interval.contents.replace(/'/g, "\\'") +
         "')";
   },
-  SedCmd: function(_prefix, sRegex, file) {
+  SedCmd: function(_prefix, sRegex, files) {
     return "sed(" +
         sRegex.toJS(0) +
-        (file.interval.contents ? ', ' + file.toJS(0) : '') +
+        (files.interval.contents ? ', ' + files.toJS(0).join(', ') : '') +
         ')';
   },
   sedRegex: function(_prefix, pat, _sl1, sub, _sl2, g, _qu) {
