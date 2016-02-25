@@ -298,7 +298,34 @@ function loadTranslatedText() {
     document.getElementById('jscode').innerHTML = replacementText;
   }
 }
+
+/*
+ * The drag-and-drop code is adapted from http://stackoverflow.com/a/12215040
+ */
+function handleFileSelect(evt) {
+  evt.stopPropagation();
+  evt.preventDefault();
+
+  var files = evt.dataTransfer.files; // FileList object.
+  var reader = new FileReader();
+  reader.onload = function(event) {
+    document.getElementById('bashcode').value = event.target.result;
+    loadTranslatedText();
+  }
+  reader.readAsText(files[0],"UTF-8");
+}
+
+function handleDragOver(evt) {
+  evt.stopPropagation();
+  evt.preventDefault();
+  evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+}
+
 $('document').ready(function() {
+  // Setup the dnd listeners.
+  var dropZone = document.getElementById('bashcode');
+  dropZone.addEventListener('dragover', handleDragOver, false);
+  dropZone.addEventListener('drop', handleFileSelect, false);
   $('#bashcode').keyup(loadTranslatedText);
   $('#checkbox1').change(loadTranslatedText);
   var timeout;
@@ -338,7 +365,7 @@ README</a>
 <textarea id="bashcode" autocomplete="off" autocorrect="off"
 autocapitalize="off" spellcheck="false" cols="80" rows="16" wrap="off">
 #!/bin/bash
-echo "Type something in this box, or paste in a simple shell script"</textarea>
+echo "Type something, paste in some code, or drag-and-drop a shell script"</textarea>
 <div class="container">
 <input type="button" class="selector" value="Select this script" onclick="selectAll('bashcode')" id="button1">
 </div>
