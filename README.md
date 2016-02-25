@@ -33,6 +33,30 @@ $ npm install
 $ gulp # This compiles index.html from src/index.generator.html
 ```
 
+ShellJS compatibility
+---------------------
+
+> What version of ShellJS is this compatible with? Can I run this code?
+
+These are good questions to which I have no good answer. Unfortunately, I'm also
+one of the maintainers of ShellJS. So I have a tendency to translate to "what
+ShellJS will soon become," instead of "what ShellJS currently is." The output
+here is designed to be compatible with what will hopefully be ShellJS v0.7+.
+This is because v0.7 will have support for many more features of Bash (pipes,
+globbing, return codes, etc.), which makes for more interesting translations. I
+openly admit that some of these translations are to features that I haven't
+actually written yet for ShellJS.
+
+The downside is that there are no guarantees that a given translation will
+actually run on any current release of ShellJS. The upside is that as I develop
+this translator, it opens my eyes to which language features ShellJS is
+desperately lacking.
+
+If you want to try running a translation, the most recent version of ShellJS is
+your best bet. I'll keep `package.json` up to date with the latest version
+dependency (since always fetching the latest is a little too unstable for my
+taste).
+
 Getting Ohm to work in Node and the browser
 -------------------------------------------
 
