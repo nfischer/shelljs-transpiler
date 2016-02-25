@@ -96,7 +96,7 @@ Bash {
 
   ForControl
       = "for" "((" ControlStruct "))" semicolon dowithspace SimpleCmd -- c_style
-      | "for" id "in" Call semicolon dowithspace SimpleCmd -- for_each
+      | "for" id "in" (Call | ArrayReference) semicolon dowithspace SimpleCmd -- for_each
 
   ControlStruct
       = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
@@ -219,15 +219,22 @@ Bash {
 
   Bashword
       = Call
+      | ArrayLiteral
       | stringLiteral
       | number
       | bareWord
+
+  ArrayLiteral
+      = "(" Bashword* ")"
 
   Call
       = "$(" Cmd ")"
       | "\"$(" Cmd ")\""
       | "`" Cmd "`"
       | "\"`" Cmd "`\""
+
+  ArrayReference
+      = "${" id "[@]}"
 
   reference
       = "$" id -- simple
