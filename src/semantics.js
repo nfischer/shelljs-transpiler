@@ -286,6 +286,9 @@ var source2sourceSemantics = {
   Bashword: function(val) {
     return val.toJS(0);
   },
+  ArrayLiteral: function(_op, bws, _cp) {
+    return '[' + bws.toJS(0).join(', ') + ']';
+  },
   reference: function(r) { return r.toJS(0); },
   reference_simple: function(_, _1) {
     return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''))
@@ -355,6 +358,7 @@ var source2sourceSemantics = {
     return id.toJS(0) + '=';
   },
   Call: function(_s, cmd, _e) { return cmd.toJS(0) },
+  ArrayReference: function(_s, arrId, _e) { return arrId.toJS(0) },
   Assignment: function(varType, nameEqual, expr) {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
