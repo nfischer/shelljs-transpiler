@@ -22,11 +22,8 @@ $ git clone --recursive https://github.com/nfischer/BashToShellJS.git
 Building the project
 --------------------
 
-This project exposes the ohm grammar to both Node and the browser. Because the
-HTML `<script>` tag doesn't let ohm files be imported with the `src` attribute,
-I wrote my own tool to effectively do the replacement.
-
-To build the project with this custom step, you only need to run:
+This project uses `gulp` as its task-runner. It depends on a git submodule and
+some npm packages, which can be installed like so:
 
 ```Bash
 $ git clone --recursive https://github.com/nfischer/BashToShellJS.git
@@ -35,3 +32,18 @@ $ npm install -g gulp-cli
 $ npm install
 $ gulp # This compiles index.html from src/index.generator.html
 ```
+
+Getting Ohm to work in Node and the browser
+-------------------------------------------
+
+This project exposes the ohm grammar to both Node and the browser. This is
+somewhat challenging to get right, because the HTML `<script>` tag doesn't let
+`.ohm` files be imported with the `src` attribute. To work around this, I wrote
+my own cross-platform tool to effectively do the replacement. This tool splices
+together `src/index.generator.html` and `src/bash.ohm` to generate the top-level
+`index.html` file.
+
+This lets me work with my grammar in a separate file, and also expose its
+contents to node more easily. Aside from the convenience of allowing my grammar
+to be in a separate file, this makes it pretty straightforward to run unit
+tests, which is tremendously helpful.
