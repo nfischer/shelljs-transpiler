@@ -1,0 +1,13 @@
+var foo = 'hello world';
+echo(foo.substr(0));
+echo(foo.substr(12));
+echo(foo.substr(1));
+echo(foo.substr(1, 3));
+echo(foo.replace("", ""));
+echo(foo.replace("he", ""));
+echo(foo.replace("he", ""));
+echo(foo.replace("he", "she"));
+echo(foo.replace(/(?:)/g, ""));
+echo(foo.replace(/he/g, ""));
+echo(foo.replace(/he/g, ""));
+echo(foo.replace(/he/g, "she"));

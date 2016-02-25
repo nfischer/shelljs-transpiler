@@ -230,8 +230,10 @@ Bash {
       | "\"`" Cmd "`\""
 
   reference
-      = "${" id "}" -- wrapped
-      | "$" id -- simple
+      = "$" id -- simple
+      | "${" id "}" -- wrapped
+      | "${" id ":" digit+ ":"? digit* "}" -- substr
+      | "${" id ("//" | "/") alnum* "/"? alnum* "}" -- substit
 
   number
       = digit+
