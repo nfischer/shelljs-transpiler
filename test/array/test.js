@@ -3,3 +3,4 @@ foo = [];
 foo.forEach(function (k) {
   echo(k);
 });
+echo(foo.length);

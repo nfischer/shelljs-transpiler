@@ -120,7 +120,7 @@ assert.ok(m.succeeded());
 
 m = bash.match("exit\n")
 assert.ok(m.succeeded());
-assert.equal(s(m).toJS(0), "exit(0);\n");
+assert.equal(s(m).toJS(0), "exit();\n");
 
 m = bash.match("exit  -43\n")
 assert.ok(m.succeeded());

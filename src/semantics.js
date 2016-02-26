@@ -214,8 +214,8 @@ var source2sourceSemantics = {
     params.push(dest.toJS(this.args.indent));
     return 'ln(' + params.join(', ') + ')';
   },
-  ExitCmd: function(_, neg, code) {
-    return 'exit(' + (code.interval.contents.trim() || '0') + ')';
+  ExitCmd: function(_, code) {
+    return 'exit(' + code.toJS(0) + ')';
   },
   ChmodCmd: function(_, arg1, arg2) {
     return 'chmod(' + cmd_helper(arg1, arg2, this.args.indent) + ')';
@@ -295,7 +295,9 @@ var source2sourceSemantics = {
     return ret;
   },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
-  singleString: function(_sq, val, _eq) { return "'" + val.interval.contents + "'"; },
+  singleString: function(_sq, val, _eq) {
+    return "'" + val.interval.contents.replace(/\n/g, '\\n') + "'";
+  },
   doubleString: function(_sq, val, _eq) {
     var ret = '';
     val.toJS(0).forEach(function (atom) {
@@ -313,7 +315,8 @@ var source2sourceSemantics = {
       }
     });
     // Clean it up
-    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '')
+        .replace(/\n/g, '\\n');
     return ret;
   },
   any: function(_) {
@@ -326,7 +329,8 @@ var source2sourceSemantics = {
     return id.toJS(0) + '=';
   },
   Call: function(_s, cmd, _e) { return cmd.toJS(0).replace(/;$/, ''); },
-  ArrayReference: function(_s, arrId, _e) { return arrId.toJS(0) },
+  arrayReference: function(_s, arrId, _e) { return arrId.toJS(0); },
+  arrayLength: function(_s, arrId, _e) { return arrId.toJS(0) + '.length'; },
   Assignment: function(varType, nameEqual, expr) {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
@@ -354,6 +358,7 @@ var source2sourceSemantics = {
   EmptyListOf: function() {
     return [];
   },
+  number: function(_1, _2) { return this.interval.contents; },
   semicolon: function(_) {
     if (true)
       return 'foo';
