@@ -38,7 +38,7 @@ Bash {
   ForCommand
       = "for" "((" ControlStruct "))" semicolon dowithspace CmdSequence Done
           -- c_style
-      | "for" id "in" (Call | ArrayReference) semicolon dowithspace CmdSequence Done          -- for_each
+      | "for" id "in" (Call | arrayReference) semicolon dowithspace CmdSequence Done          -- for_each
 
   ControlStruct
       = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
@@ -132,7 +132,7 @@ Bash {
   PopdCmd  = "popd"   options? Bashword?
   DirsCmd  = "dirs"   (options | Bashword)?
   LnCmd    = "ln "    options? Bashword Bashword
-  ExitCmd  = "exit"   ("-"? digit+)?
+  ExitCmd  = "exit"   Bashword?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
   SetCmd   = "set "   modOptions
@@ -158,6 +158,8 @@ Bash {
   Bashword
       = Call
       | ArrayLiteral
+      | arrayLength
+      | arrayReference
       | stringLiteral
       | number
       | bareWord
@@ -171,8 +173,11 @@ Bash {
       | "`" Cmd "`"
       | "\"`" Cmd "`\""
 
-  ArrayReference
+  arrayReference
       = "${" id "[@]}"
+
+  arrayLength
+      = "${#" id "[@]}"
 
   reference
       = "$" id -- simple
@@ -181,7 +186,7 @@ Bash {
       | "${" id ("//" | "/") alnum* "/"? alnum* "}" -- substit
 
   number
-      = digit+
+      = "-"? digit+
 
   bareWord
       = (~badchars (reference | any))+
