@@ -1,13 +1,12 @@
 Bash {
   Script
-      = (Shebang "\n")? allwhitespace* ScriptCode?
-  ScriptCode = Cmd | NullCmd
+      = (Shebang "\n")? allwhitespace* CmdSequence? semicolon*
+  CmdSequence = NonemptyListOf<Cmd, semicolon>
   Shebang = "#!" (~"sh" any)* "sh"
-  Cmd = SequenceCmd
-      | NoSemicolonCmd
-      | PipeCmd
-      | Assignment
-      | SimpleCmd
+
+  Cmd = NoSemicolonCmd
+      | SemicolonCmd
+      | ("" ~keyword)
 
   NoSemicolonCmd
       = IfCommand
@@ -16,25 +15,20 @@ Bash {
       | WhileCommand
       | CmdWithComment
 
-  BlockedCmd (a command that can appear inside a block)
-      = comment
-      /* = IfCommand */
-      /* | ForCommand */
-      /* | WhileCommand */
-      /* | CmdWithComment */
-      /* | PipeCmd */
-      /* | Assignment */
+  SemicolonCmd
+      = PipeCmd
+      | Assignment
       | SimpleCmd
 
   IfCommand
-      = IfCase ElseIfThen* ElseCase? EndIf
+      = IfCase ElseIfThen* ElseCase? EndIf?
 
   IfCase
-      = ifwithspace Conditional semicolon thenwithspace BlockedCmd
+      = ifwithspace Conditional semicolon thenwithspace CmdSequence
   ElseIfThen
-      = semicolon elifwithspace Conditional semicolon thenwithspace SimpleCmd
+      = semicolon elifwithspace Conditional semicolon thenwithspace CmdSequence
   ElseCase
-      = semicolon elsewithspace SimpleCmd
+      = semicolon elsewithspace CmdSequence
   EndIf = semicolon "fi"
 
   Conditional
@@ -42,20 +36,15 @@ Bash {
       | SimpleCmd -- cmd
 
   ForCommand
-      = ForControl Done
-
-  ForControl
-      = "for" "((" ControlStruct "))" semicolon dowithspace SimpleCmd -- c_style
-      | "for" id "in" (Call | ArrayReference) semicolon dowithspace SimpleCmd -- for_each
+      = "for" "((" ControlStruct "))" semicolon dowithspace CmdSequence Done
+          -- c_style
+      | "for" id "in" (Call | ArrayReference) semicolon dowithspace CmdSequence Done          -- for_each
 
   ControlStruct
       = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
 
   WhileCommand
-      = WhileControl Done
-
-  WhileControl
-      = whilewithspace Conditional semicolon dowithspace SimpleCmd
+      = whilewithspace Conditional semicolon dowithspace CmdSequence Done
 
   whilewithspace = "while" space+
   dowithspace = "do" allwhitespace+
@@ -64,8 +53,8 @@ Bash {
 
   BinaryOp (Binary operator)
       = Equal | NotEqual | LessThan | GreaterThan | LessThanEq | GreaterThanEq
-  Equal         = "==" | "=" | "-eq"
-  NotEqual      = "!=" | "-ne"
+  Equal         = "=="  | "=" | "-eq"
+  NotEqual      = "!="  | "-ne"
   LessThan      = "-lt" | "<"
   GreaterThan   = "-gt" | ">"
   LessThanEq    = "-le" | "<="
@@ -85,7 +74,7 @@ Bash {
       | NoSemicolonCmd semicolon -- noscNull
       | Cmd semicolon -- null
 
-  PipeCmd = Cmd "|" allwhitespace* Cmd
+  PipeCmd = (PipeCmd | SimpleCmd) "|" allwhitespace* (PipeCmd | SimpleCmd)
 
   CmdWithComment
       = SimpleCmd comment
@@ -162,7 +151,6 @@ Bash {
 
   CmdName = (~keyword Bashword)
   Arglist = Bashword*
-  NullCmd = ""
   comment = space* "#" (~"\n" any)*
   options = "-" letter+
   modOptions = ("-" |"+" ) letter+
@@ -226,5 +214,7 @@ Bash {
   id = (~keyword (alnum | "_")+) | "?"
   space := " " | "\t"
   allwhitespace = space | "\n"
-  semicolon = (";" | "\n")+
+  semicolon
+      = ";"* "\n" -- both
+      | ";"+
 }
