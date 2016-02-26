@@ -21,7 +21,7 @@ Bash {
       | SimpleCmd
 
   IfCommand
-      = IfCase ElseIfThen* ElseCase? EndIf?
+      = IfCase ElseIfThen* ElseCase? EndIf
 
   IfCase
       = ifwithspace Conditional semicolon thenwithspace CmdSequence
