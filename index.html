@@ -228,7 +228,7 @@ Bash {
       | bareWord
 
   ArrayLiteral
-      = "(" Bashword* ")"
+      = "(" allwhitespace* (Bashword allwhitespace*)* ")"
 
   Call
       = "$(" Cmd ")"
@@ -238,6 +238,7 @@ Bash {
 
   arrayReference
       = "${" id "[@]}"
+      | "\"${" id "[@]}\""
 
   arrayLength
       = "${#" id "[@]}"
