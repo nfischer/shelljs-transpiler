@@ -7,6 +7,19 @@ blockquote {
   font-style: italic;
   padding: 10px;
 }
+#hint-box {
+  position: absolute;
+  z-index: 1;
+  right: 10px;
+  padding: 5px;
+  float: right;
+  width: 10%;
+}
+p.hint-text {
+  text-align: left;
+  font-style: italic;
+  font-size: 10pt;
+}
 table {
   margin-left: auto;
   margin-right: auto;
@@ -96,7 +109,7 @@ Bash {
 
   ForControl
       = "for" "((" ControlStruct "))" semicolon dowithspace SimpleCmd -- c_style
-      | "for" id "in" Call semicolon dowithspace SimpleCmd -- for_each
+      | "for" id "in" (Call | ArrayReference) semicolon dowithspace SimpleCmd -- for_each
 
   ControlStruct
       = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
@@ -219,9 +232,13 @@ Bash {
 
   Bashword
       = Call
+      | ArrayLiteral
       | stringLiteral
       | number
       | bareWord
+
+  ArrayLiteral
+      = "(" Bashword* ")"
 
   Call
       = "$(" Cmd ")"
@@ -229,9 +246,14 @@ Bash {
       | "`" Cmd "`"
       | "\"`" Cmd "`\""
 
+  ArrayReference
+      = "${" id "[@]}"
+
   reference
-      = "${" id "}" -- wrapped
-      | "$" id -- simple
+      = "$" id -- simple
+      | "${" id "}" -- wrapped
+      | "${" id ":" digit+ ":"? digit* "}" -- substr
+      | "${" id ("//" | "/") alnum* "/"? alnum* "}" -- substit
 
   number
       = digit+
@@ -272,12 +294,11 @@ Bash {
 </script>
 
 <script src="src/semantics.js"></script>
+<script src="src/hints.js"></script>
 <script>
 function selectAll(id) {
   document.getElementById(id).select();
 }
-</script>
-<script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
 var errMessage;
@@ -342,6 +363,10 @@ $('document').ready(function() {
     }, 3000);
   });
   loadTranslatedText();
+
+  // Load in a hint
+  var idx = Math.floor(Math.random() * hints.length);
+  document.getElementById('hint-body').innerHTML = hints[idx];
 });
 </script>
 </head>
@@ -357,6 +382,10 @@ README</a>
 <p>Like it? Check out the project <a href="https://github.com/nfischer/BashToShellJS">on Github</a></p>
 <input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace <i><a href="http://github.com/shelljs/shelljs#global-vs-local">What is this?</a></i>
 <br>
+<div id="hint-box">
+<p class="hint-text">Hint:</p>
+<p class="hint-text" id="hint-body"></p>
+</div>
 <table>
 <tr>
 <td>

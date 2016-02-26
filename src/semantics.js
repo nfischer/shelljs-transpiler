@@ -286,8 +286,28 @@ var source2sourceSemantics = {
   Bashword: function(val) {
     return val.toJS(0);
   },
-  reference: function(_) {
-    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''));
+  ArrayLiteral: function(_op, bws, _cp) {
+    return '[' + bws.toJS(0).join(', ') + ']';
+  },
+  reference: function(r) { return r.toJS(0); },
+  reference_simple: function(_, _1) {
+    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''))
+  },
+  reference_wrapped: function(_, _1, _2) {
+    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''))
+  },
+  reference_substr: function(_ob, id, _col, dig, _col2, dig2, _cb) {
+    return '$$' + id.toJS(0) + '.substr(' + dig.interval.contents +
+        (dig2.interval.contents ? ', ' + dig2.interval.contents : '') +
+        ')';
+  },
+  reference_substit: function(_ob, id, _sl1, pat, _sl2, sub, _cb) {
+    var patStr = _sl1.interval.contents === "//"
+        ? new RegExp(pat.interval.contents, 'g').toString()
+        : JSON.stringify(pat.interval.contents);
+    return '$$' + id.toJS(0) + '.replace(' +
+        patStr + ', ' +
+        JSON.stringify((sub.interval.contents) || '') + ')';
   },
   notDoubleQuote_escape: function(_, _2) { return this.interval.contents; },
   bareWord: function(w) {
@@ -302,7 +322,6 @@ var source2sourceSemantics = {
       }
     });
     // Clean it up
-    // ret = ret.replace(/\\"/g,  '"').replace(/'/g, "\\'");
     ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
     return ret;
   },
@@ -339,6 +358,7 @@ var source2sourceSemantics = {
     return id.toJS(0) + '=';
   },
   Call: function(_s, cmd, _e) { return cmd.toJS(0) },
+  ArrayReference: function(_s, arrId, _e) { return arrId.toJS(0) },
   Assignment: function(varType, nameEqual, expr) {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
