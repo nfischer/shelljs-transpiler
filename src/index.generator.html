@@ -7,6 +7,19 @@ blockquote {
   font-style: italic;
   padding: 10px;
 }
+#hint-box {
+  position: absolute;
+  z-index: 1;
+  right: 10px;
+  padding: 5px;
+  float: right;
+  width: 10%;
+}
+p.hint-text {
+  text-align: left;
+  font-style: italic;
+  font-size: 10pt;
+}
 table {
   margin-left: auto;
   margin-right: auto;
@@ -49,12 +62,11 @@ button.selector {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/ohm-js" src="src/bash.ohm"></script>
 <script src="src/semantics.js"></script>
+<script src="src/hints.js"></script>
 <script>
 function selectAll(id) {
   document.getElementById(id).select();
 }
-</script>
-<script>
 var bash = ohm.grammarFromScriptElement();
 var s = bash.semantics();
 var errMessage;
@@ -119,6 +131,10 @@ $('document').ready(function() {
     }, 3000);
   });
   loadTranslatedText();
+
+  // Load in a hint
+  var idx = Math.floor(Math.random() * hints.length);
+  document.getElementById('hint-body').innerHTML = hints[idx];
 });
 </script>
 </head>
@@ -134,6 +150,10 @@ README</a>
 <p>Like it? Check out the project <a href="https://github.com/nfischer/BashToShellJS">on Github</a></p>
 <input type="checkbox" name="globalInclude" id="checkbox1" checked>Include in global namespace <i><a href="http://github.com/shelljs/shelljs#global-vs-local">What is this?</a></i>
 <br>
+<div id="hint-box">
+<p class="hint-text">Hint:</p>
+<p class="hint-text" id="hint-body"></p>
+</div>
 <table>
 <tr>
 <td>
