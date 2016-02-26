@@ -1,1 +1,2 @@
-echo('foo'); echo('bar');
+echo('foo');
+echo('bar');

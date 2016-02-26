@@ -52,13 +52,6 @@ m = bash.match('# this is a comment ; echo foo');
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "// this is a comment ; echo foo");
 
-m = bash.match("while [ $x -ne 1 ]; do\n echo 'hi'\ndone\npwd\n");
-assert.ok(m.succeeded());
-assert.equal(s(m).toJS(0), "while (x !== 1) {\n" +
-                           "  echo('hi');\n" +
-                           "}\n" +
-                           "pwd();\n");
-
 m = bash.match("if [ -f foo.txt ]; then\n" +
                "  echo hi\n" +
                "fi\n");

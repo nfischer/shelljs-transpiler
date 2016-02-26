@@ -43,52 +43,53 @@ var globalInclude = true;
 var globalEnvironment = {};
 
 var source2sourceSemantics = {
-  Cmd: function(e) { return e.toJS(this.args.indent); },
-  NoSemicolonCmd: function(c) { return c.toJS(this.args.indent); },
+  Cmd: function(e) {
+    return this.interval.contents && e.toJS(this.args.indent);
+  },
+  SemicolonCmd: function(c) { return c.toJS(this.args.indent) + ';'; },
+  NoSemicolonCmd: function(c) {
+    return c.toJS(this.args.indent);
+  },
   IfCommand: function(ic, eit, elc, ef) {
     return ic.toJS(this.args.indent) +
       eit.toJS(this.args.indent) +
       elc.toJS(this.args.indent) +
       ef.toJS(this.args.indent);
   },
-  IfCase: function(iws, cond, _sc, _tws, cmd) {
-    return 'if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent) + cmd.toJS(this.args.indent+1) + ';';
+  IfCase: function(iws, cond, _sc, _tws, cmds) {
+    return 'if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent+1) +
+        cmds.toJS(this.args.indent+1);
   },
   ElseIfThen: function(_sc1, eiws, cond, _sc2, _tws, cmd) {
-    return nl(this.args.indent) + '} else if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent) + cmd.toJS(this.args.indent+1) + ';';
+    return nl(this.args.indent) + '} else if (' + cond.toJS(this.args.indent) +
+        ') {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent+1);
   },
   ElseCase: function(_sc, ews, cmd) {
-    return nl(this.args.indent) + '} else {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent) + ';';
+    return nl(this.args.indent) + '} else {' + nl(this.args.indent+1) +
+        cmd.toJS(this.args.indent+1);
   },
   EndIf: function(_sc, _fi) {
     return nl(this.args.indent) + '}';
   },
-  ForCommand: function(fc, _done) {
-    var controlStr = fc.toJS(this.args.indent);
-    return controlStr +
-      nl(this.args.indent) + '}' +
-      (controlStr.indexOf('forEach') > -1 ? ');' : '');
-  },
-  ForControl: function(f) { return f.toJS(this.args.indent); },
-  ForControl_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _dws, cmd) {
+  ForCommand: function(f) { return f.toJS(this.args.indent); },
+  ForCommand_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _dws, cmd, done) {
     return 'for (' + ctrlstruct.toJS(0) + ') {' +
-      nl(this.args.indent + 1) + cmd.toJS(this.args.indent) + ';';
+        nl(this.args.indent+1) + cmd.toJS(this.args.indent+1) +
+        nl(this.args.indent) + '}';
   },
   ControlStruct: function(assign, _sc1, id, binop, val, _sc2, update) {
     return assign.toJS(0) + ';' + id.interval.contents + binop.toJS(0) + val.toJS(0) +
       ';' + update.interval.contents;
   },
-  ForControl_for_each: function(_for, id, _in, call, _sc, _dws, cmd2) {
+  ForCommand_for_each: function(_for, id, _in, call, _sc, _dws, cmd2, done) {
     return call.toJS(this.args.indent) + '.forEach(function (' + id.interval.contents + ') {' +
-      nl(this.args.indent + 1) + cmd2.toJS(this.args.indent) + ';';
+        nl(this.args.indent+1) + cmd2.toJS(this.args.indent+1) +
+        nl(this.args.indent) + '});';
   },
-  WhileCommand: function(wc, done) {
-    return wc.toJS(this.args.indent) +
-      done.toJS(this.args.indent);
-  },
-  WhileControl: function(_wws, cond, _sc, _dws, cmd) {
+  WhileCommand: function(_wws, cond, _sc, _dws, cmd, done) {
     return 'while (' + cond.toJS(this.args.indent) + ') {' +
-      nl(this.args.indent + 1) + cmd.toJS(this.args.indent) + ';';
+        nl(this.args.indent+1) + cmd.toJS(this.args.indent+1) +
+        done.toJS(this.args.indent);
   },
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
@@ -129,14 +130,14 @@ var source2sourceSemantics = {
   GreaterThan: function(_) { return '>'; },
   LessThanEq: function(_) { return '<='; },
   GreaterThanEq: function(_) { return '>='; },
-  Script: function(shebang, _nl, space, scriptcode) {
+  Script: function(shebang, _nl, space, cmds, _trailing) {
     // Always reset the global environment to empty
     globalEnvironment = {};
     return (this.interval.contents.match(/^(\s)*$/)
           ? ''
           : shebang.toJS(this.args.indent) +
         space.interval.contents +
-        scriptcode.toJS(this.args.indent));
+        cmds.toJS(this.args.indent));
   },
   Shebang: function(_a, _b, _c) {
     if (this.interval.contents)
@@ -147,39 +148,8 @@ var source2sourceSemantics = {
       return '';
     }
   },
-  ScriptCode: function(cmd) { return cmd.toJS(this.args.indent); },
-  SequenceCmd: function(x) { return x.toJS(this.args.indent); },
-  SequenceCmd_std: function(c1, sc, c2) {
-    var mysc = sc.toJS(this.args.indent);
-    var ret = c1.toJS(this.args.indent) + mysc;
-    if (mysc === '\n')
-      ret += ind(this.args.indent);
-    ret += c2.toJS(this.args.indent);
-    return ret;
-  },
-  SequenceCmd_noscNull: function(c1, sc) {
-    var mysc = sc.toJS(this.args.indent);
-    var ret = c1.toJS(this.args.indent) + '\n';
-    return ret;
-  },
-  SequenceCmd_null: function(c1, sc) {
-    var mysc = sc.toJS(this.args.indent);
-    var ret = c1.toJS(this.args.indent) + ';\n';
-    return ret;
-  },
-  SequenceCmd_nosemicolon: function(c1, sc, c2) {
-    var mysc = sc.toJS(this.args.indent);
-    var ret = c1.toJS(this.args.indent);
-    var secondIndent;
-    if (sc.interval.contents.indexOf(';') === -1) {
-      ret += sc.interval.contents;
-      secondIndent = this.args.indent;
-    } else {
-      ret += '; ';
-      secondIndent = 0;
-    }
-    ret += c2.toJS(secondIndent);
-    return ret;
+  CmdSequence: function(list) {
+    return list.toJS(this.args.indent).join(nl(this.args.indent));
   },
   PipeCmd: function(c1, _, spaces, c2) {
     var newlines = spaces.interval.contents.replace(/[^\n]/g, '');
@@ -189,8 +159,7 @@ var source2sourceSemantics = {
         c2.toJS(0).replace(/^shell\./, '');
   },
   SimpleCmd: function(scb, redirects) {
-    return ind(this.args.indent) +
-        scb.toJS(this.args.indent) +
+    return scb.toJS(this.args.indent) +
         redirects.toJS(this.args.indent).join('');
   },
   SimpleCmdBase: function(specific_cmd) {
@@ -344,7 +313,6 @@ var source2sourceSemantics = {
       }
     });
     // Clean it up
-    // ret = ret.replace(/\\"/g,  '"').replace(/'/g, "\\'");
     ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
     return ret;
   },
@@ -357,7 +325,7 @@ var source2sourceSemantics = {
   idEqual: function(id, _) {
     return id.toJS(0) + '=';
   },
-  Call: function(_s, cmd, _e) { return cmd.toJS(0) },
+  Call: function(_s, cmd, _e) { return cmd.toJS(0).replace(/;$/, ''); },
   ArrayReference: function(_s, arrId, _e) { return arrId.toJS(0) },
   Assignment: function(varType, nameEqual, expr) {
     // Check if this variable is assigned already. If not, stick it in the
@@ -380,11 +348,17 @@ var source2sourceSemantics = {
   allwhitespace: function(_) {
     return this.interval.contents;
   },
+  NonemptyListOf: function(x, sep, xs) {
+    return [x.toJS(this.args.indent)].concat(xs.toJS(this.args.indent));
+  },
+  EmptyListOf: function() {
+    return [];
+  },
   semicolon: function(_) {
-    if (this.interval.contents.match(/^;+$/))
-      return '; ';
+    if (true)
+      return 'foo';
     else
-      return ';' + this.interval.contents;
+      return this.interval.contents;
   }
 };
 
