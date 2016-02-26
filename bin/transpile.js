@@ -8,11 +8,13 @@ var path = require('path');
 var semantics = require('../src/semantics');
 require('shelljs/global');
 
+var argv = require('minimist')(process.argv.slice(2));
+
 var contents = fs.readFileSync(path.join(__dirname, '..', 'src', 'bash.ohm'));
 var bash = ohm.grammar(contents);
 
 // Load in script, ensure a trailing newline
-var inputFile = process.argv[2];
+var inputFile = argv._[0]
 if (!inputFile) {
   console.error('Usage: node transpile.js <input>');
   process.exit(1);
@@ -32,4 +34,11 @@ s.addOperation(
 
 var n = s(m);
 
-console.log(n.toJS(0));
+var shellOutput = n.toJS(0);
+if (argv['r']) { // run it!
+  exec('node -e ' + JSON.stringify(shellOutput
+      .replace(/#!.*\n/, '')
+      .replace(/\n/g, '')));
+} else {
+  process.stdout.write(shellOutput);
+}

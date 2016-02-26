@@ -240,11 +240,11 @@ var source2sourceSemantics = {
         ')';
   },
   sedRegex: function(_prefix, pat, _sl1, sub, _sl2, g, _qu) {
-    return '/' + pat.interval.contents +
+    return ('/' + pat.interval.contents +
         (g.interval.contents || '/') +
         ", '" +
         sub.interval.contents +
-        "'";
+        "'").replace(/\\\+/g, '+');
   },
   Arglist: function(_) {
     return this.interval.contents;
@@ -255,7 +255,7 @@ var source2sourceSemantics = {
   Bashword: function(val) {
     return val.toJS(0);
   },
-  ArrayLiteral: function(_op, bws, _cp) {
+  ArrayLiteral: function(_op, _sp1, bws, _sp2, _cp) {
     return '[' + bws.toJS(0).join(', ') + ']';
   },
   reference: function(r) { return r.toJS(0); },
