@@ -1,9 +1,9 @@
-function cmd_helper(opts, args, indent) {
+function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.interval.contents)
-    params.push(opts.toJS(indent));
+    params.push(opts.toJS(0));
   if (args && args.interval.contents) {
-    var js_args = args.toJS(indent);
+    var js_args = args.toJS(0);
     if (typeof js_args === 'string') {
       params.push(js_args);
     } else {
@@ -186,31 +186,34 @@ var source2sourceSemantics = {
   },
   PwdCmd: function(_) { return 'pwd()'; },
   LsCmd: function(_, opts, args) {
-    return 'ls(' + cmd_helper(opts, args, this.args.indent) + ')';
+    return 'ls(' + cmd_helper(opts, args) + ')';
   },
   FindCmd: function(_, args) {
-    return "find(" + cmd_helper(null, args, this.args.indent) + ")";
+    return "find(" + cmd_helper(null, args) + ")";
   },
   BasicCmd: function(cname, opts, args) {
-    return cname.interval.contents.trim() + '(' + cmd_helper(opts, args, this.args.indent) + ')';
+    return cname.interval.contents.trim() + '(' + cmd_helper(opts, args) + ')';
   },
   CatCmd: function(_, args) {
-    return 'cat(' + cmd_helper(null, args, this.args.indent) + ')';
+    return 'cat(' + cmd_helper(null, args) + ')';
   },
   WhichCmd: function(_, arg) {
     return 'which(' + arg.toJS(0) + ')';
   },
   EchoCmd: function(_, args) {
-    return 'echo(' + cmd_helper(null, args, this.args.indent) + ')';
+    return 'echo(' + cmd_helper(null, args) + ')';
+  },
+  HeadCmd: function(_, opts, args) {
+    return 'head(' + cmd_helper(opts, args) + ')';
   },
   PushdCmd: function(_, opts, args) {
-    return 'pushd(' + cmd_helper(opts, args, this.args.indent) + ')';
+    return 'pushd(' + cmd_helper(opts, args) + ')';
   },
   PopdCmd: function(_, opts, args) {
-    return 'popd(' + cmd_helper(opts, args, this.args.indent) + ')';
+    return 'popd(' + cmd_helper(opts, args) + ')';
   },
   DirsCmd: function(_, args) {
-    return 'dirs(' + cmd_helper(null, args, this.args.indent) + ')';
+    return 'dirs(' + cmd_helper(null, args) + ')';
   },
   LnCmd: function(_, opts, src, dest) {
     var params = [];
@@ -224,15 +227,20 @@ var source2sourceSemantics = {
     return 'exit(' + code.toJS(0) + ')';
   },
   ChmodCmd: function(_, arg1, arg2) {
-    return 'chmod(' + cmd_helper(arg1, arg2, this.args.indent) + ')';
+    return 'chmod(' + cmd_helper(arg1, arg2) + ')';
   },
   TouchCmd: function(_, opts, arg) {
-    return 'touch(' + cmd_helper(opts, arg, this.args.indent) + ')';
+    return 'touch(' + cmd_helper(opts, arg) + ')';
+  },
+  SortCmd: function(_, opts, args) {
+    return 'sort(' + cmd_helper(opts, args) + ')';
   },
   ExecCmd: function(firstword, args) {
     return "exec('" +
-        this.interval.contents.replace(/'/g, "\\'") +
-        "')";
+        this.interval.contents
+          .replace(/\\/g, '\\\\') // back slashes
+          .replace(/'/g, "\\'") +   // quotes
+          "')";
   },
   SetCmd: function(_, opts) {
     return "set('" +

@@ -97,6 +97,7 @@ Bash {
       | WhichCmd
       | TestCmd
       | EchoCmd
+      | HeadCmd
       | PushdCmd
       | PopdCmd
       | DirsCmd
@@ -104,6 +105,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | SortCmd
       | SetCmd
       | SedCmd
       | ExecCmd
@@ -129,6 +131,7 @@ Bash {
   CatCmd   = "cat"    Bashword*
   WhichCmd = "which " Bashword
   EchoCmd  = "echo"   Bashword*
+  HeadCmd  = "head"   options? Bashword*
   PushdCmd = "pushd"  options? Bashword?
   PopdCmd  = "popd"   options? Bashword?
   DirsCmd  = "dirs"   (options | Bashword)?
@@ -136,6 +139,7 @@ Bash {
   ExitCmd  = "exit"   Bashword?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
+  SortCmd  = "sort"   options? Bashword*
   SetCmd   = "set "   modOptions
   SedCmd   = "sed "   sedRegex Bashword*
   ExecCmd  = CmdName Arglist
