@@ -17,6 +17,7 @@ Bash {
 
   SemicolonCmd
       = PipeCmd
+      | Export
       | Assignment
       | SimpleCmd
 
@@ -214,10 +215,15 @@ Bash {
       | "\\" any -- escape
 
   badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")"
+  Export
+      = "export " Assignment -- assign
+      | "export " id -- bare
   Assignment
-      = ("local " | "readonly " | "export ")? idEqual Bashword?
-  idEqual = id "="
-  id = (~keyword (alnum | "_")+) | "?"
+      = ("local " | "readonly ")? idEqual Bashword?
+  idEqual = id_std "="
+  id  = (~keyword (letter | "_") (alnum | "_")*) -- std
+      | digit+ -- arg
+      | "?" -- error
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon
