@@ -31,8 +31,14 @@ function ind(ind_count) {
 }
 
 function env(str) {
+  return (globalInclude ? '' : 'shell.') + 'env.' + str;
+}
+
+function envGuess(str) {
   if (str === '?')
     return (globalInclude ? '' : 'shell.') + 'error()';
+  else if (str.match(/^\d+$/))
+    return 'process.argv[' + (JSON.parse(str)+1) + ']';
   else if (str === str.toUpperCase())
     return (globalInclude ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
   else
@@ -260,10 +266,10 @@ var source2sourceSemantics = {
   },
   reference: function(r) { return r.toJS(0); },
   reference_simple: function(_, _1) {
-    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''))
+    return '$$' + envGuess(this.interval.contents.replace(/^\$/, ''));
   },
   reference_wrapped: function(_, _1, _2) {
-    return '$$' + env(this.interval.contents.replace(/^\${?/, '').replace(/}?$/, ''))
+    return '$$' + envGuess(this.interval.contents.match(/^\${(.*)}$/)[1]);
   },
   reference_substr: function(_ob, id, _col, dig, _col2, dig2, _cb) {
     return '$$' + id.toJS(0) + '.substr(' + dig.interval.contents +
@@ -323,7 +329,10 @@ var source2sourceSemantics = {
     return this.interval.contents;
   },
   id: function(_) {
-    return env(this.interval.contents);
+    return envGuess(this.interval.contents);
+  },
+  id_std: function(_1, _2) {
+    return envGuess(this.interval.contents);
   },
   idEqual: function(id, _) {
     return id.toJS(0) + '=';
@@ -331,12 +340,26 @@ var source2sourceSemantics = {
   Call: function(_s, cmd, _e) { return cmd.toJS(0).replace(/;$/, ''); },
   arrayReference: function(_s, arrId, _e) { return arrId.toJS(0); },
   arrayLength: function(_s, arrId, _e) { return arrId.toJS(0) + '.length'; },
+  Export: function(e) {
+    return e.toJS(this.args.indent);
+  },
+  Export_bare: function(_, id) {
+    id_str = id.toJS(0);
+    return (id_str.match(/env\./) ? id_str : env(id_str)) +
+        ' = ' + id_str;
+  },
+  Export_assign: function(_, assign) {
+    assign_str = assign.toJS(0).replace(/^(var|const) /, '');
+    var id = assign_str.match(/^([^ ]+) =/)[1];
+    return (id.match(/env\./) ? '' : env(id) + ' = ') +
+        assign_str
+  },
   Assignment: function(varType, nameEqual, expr) {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
     var ret;
     var varName = nameEqual.toJS(0).trim().slice(0, -1); // trim off '='
-    if (varName.match(/^(shell.)?env./) || globalEnvironment[varName]) {
+    if (varName.match(/^(shell.)?env.|^process.argv./) || globalEnvironment[varName]) {
       ret = '';
     } else {
       ret = varType.interval.contents.indexOf('readonly') > -1 ? 'const ' : 'var ';
