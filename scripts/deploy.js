@@ -3,6 +3,7 @@ require('shelljs/global');
 
 // Deply the website to the gh-pages branch so that it's live
 // This script was generated with this transpiler!
+set('-e');
 exec('git checkout gh-pages');
 exec('git rev-parse --abbrev-ref HEAD');
 exec('git merge master --commit');
