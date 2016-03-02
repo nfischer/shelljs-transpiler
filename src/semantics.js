@@ -1,3 +1,14 @@
+var reservedWords = [
+  'abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char',
+  'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double',
+  'else', 'enum', 'eval', 'export', 'extends', 'false', 'final', 'finally',
+  'float', 'for', 'function', 'goto', 'if', 'implements', 'import', 'in',
+  'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null',
+  'package', 'private', 'protected', 'public', 'return', 'short', 'static',
+  'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient',
+  'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield',
+];
+
 function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.interval.contents)
@@ -273,11 +284,11 @@ var source2sourceSemantics = {
     return '[' + bws.toJS(0).join(', ') + ']';
   },
   reference: function(r) { return r.toJS(0); },
-  reference_simple: function(_, _1) {
-    return '$$' + envGuess(this.interval.contents.replace(/^\$/, ''));
+  reference_simple: function(_, id) {
+    return '$$' + envGuess(id.toJS(0));
   },
-  reference_wrapped: function(_, _1, _2) {
-    return '$$' + envGuess(this.interval.contents.match(/^\${(.*)}$/)[1]);
+  reference_wrapped: function(_, id, _2) {
+    return '$$' + envGuess(id.toJS(0));
   },
   reference_substr: function(_ob, id, _col, dig, _col2, dig2, _cb) {
     return '$$' + id.toJS(0) + '.substr(' + dig.interval.contents +
@@ -337,10 +348,16 @@ var source2sourceSemantics = {
     return this.interval.contents;
   },
   id: function(_) {
-    return envGuess(this.interval.contents);
+    var ret = envGuess(this.interval.contents);
+    if (reservedWords.indexOf(ret) > -1)
+      ret = '_$' + ret; // this can't be a valid bash id, so we avoid conflicts
+    return ret;
   },
   id_std: function(_1, _2) {
-    return envGuess(this.interval.contents);
+    var ret = envGuess(this.interval.contents);
+    if (reservedWords.indexOf(ret) > -1)
+      ret = '_$' + ret; // this can't be a valid bash id, so we avoid conflicts
+    return ret;
   },
   idEqual: function(id, _) {
     return id.toJS(0) + '=';
