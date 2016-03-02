@@ -3,6 +3,10 @@
 <head>
 <title>Bash to ShellJS Translator</title>
 <style>
+@font-face {
+  font-family: Junction;
+  src: url("fonts/junction-regular/Junction.otf") format("opentype");
+}
 blockquote {
   font-style: italic;
   padding: 10px;
@@ -26,7 +30,7 @@ table {
 }
 body, h1, p {
   text-align: center;
-  font-family: Impact, Charcoal, sans-serif;
+  font-family: Junction;
 }
 h2 {
   font-style: italic;
@@ -160,6 +164,7 @@ Bash {
       | WhichCmd
       | TestCmd
       | EchoCmd
+      | HeadCmd
       | PushdCmd
       | PopdCmd
       | DirsCmd
@@ -167,6 +172,7 @@ Bash {
       | ExitCmd
       | ChmodCmd
       | TouchCmd
+      | SortCmd
       | SetCmd
       | SedCmd
       | ExecCmd
@@ -192,6 +198,7 @@ Bash {
   CatCmd   = "cat"    Bashword*
   WhichCmd = "which " Bashword
   EchoCmd  = "echo"   Bashword*
+  HeadCmd  = "head"   options? Bashword*
   PushdCmd = "pushd"  options? Bashword?
   PopdCmd  = "popd"   options? Bashword?
   DirsCmd  = "dirs"   (options | Bashword)?
@@ -199,6 +206,7 @@ Bash {
   ExitCmd  = "exit"   Bashword?
   ChmodCmd = "chmod " Bashword Bashword
   TouchCmd = "touch " options? Bashword
+  SortCmd  = "sort"   options? Bashword*
   SetCmd   = "set "   modOptions
   SedCmd   = "sed "   sedRegex Bashword*
   ExecCmd  = CmdName Arglist
