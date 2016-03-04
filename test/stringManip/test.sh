@@ -11,3 +11,4 @@ echo ${foo//}
 echo ${foo//he}
 echo ${foo//he/}
 echo ${foo//he/she}
+echo ${#foo}

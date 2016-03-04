@@ -190,6 +190,7 @@ Bash {
       | "${" id "}" -- wrapped
       | "${" id ":" digit+ ":"? digit* "}" -- substr
       | "${" id ("//" | "/") alnum* "/"? alnum* "}" -- substit
+      | "${#" id "}" -- length
 
   number
       = "-"? digit+
@@ -228,6 +229,7 @@ Bash {
   id  = (~keyword (letter | "_") (alnum | "_")*) -- std
       | digit+ -- arg
       | "?" -- error
+      | "#" -- argLength
   space := " " | "\t"
   allwhitespace = space | "\n"
   semicolon

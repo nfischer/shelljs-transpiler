@@ -3,3 +3,4 @@ if (error() === 0) {
 } else {
   echo(error());
 }
+echo(process.argv.length-1);

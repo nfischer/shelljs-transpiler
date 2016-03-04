@@ -48,6 +48,8 @@ function env(str) {
 function envGuess(str) {
   if (str === '?')
     return (globalInclude ? '' : 'shell.') + 'error()';
+  if (str === '#')
+    return 'process.argv.length-1';
   else if (str.match(/^\d+$/))
     return 'process.argv[' + (JSON.parse(str)+1) + ']';
   else if (str === str.toUpperCase())
@@ -302,6 +304,9 @@ var source2sourceSemantics = {
     return '$$' + id.toJS(0) + '.replace(' +
         patStr + ', ' +
         JSON.stringify((sub.interval.contents) || '') + ')';
+  },
+  reference_length: function(_ob, id, _cb) {
+    return '$$' + id.toJS(0) + '.length';
   },
   notDoubleQuote_escape: function(_, _2) { return this.interval.contents; },
   bareWord: function(w) {

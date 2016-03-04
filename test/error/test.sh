@@ -3,3 +3,4 @@ if [ $? == 0 ]; then
 else
   echo "${?}"
 fi
+echo $#
