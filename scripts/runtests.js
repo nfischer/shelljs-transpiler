@@ -246,3 +246,5 @@ if (retStatus === 0)
   echo('All tests passed!');
 else
   echo('\nSome tests failed');
+
+exit(retStatus);

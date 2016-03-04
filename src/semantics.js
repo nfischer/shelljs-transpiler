@@ -147,7 +147,7 @@ var source2sourceSemantics = {
   GreaterThan: function(_) { return '>'; },
   LessThanEq: function(_) { return '<='; },
   GreaterThanEq: function(_) { return '>='; },
-  Script: function(shebang, _nl, space, cmds, _trailing) {
+  Script: function(shebang, space, cmds, _trailing) {
     // Always reset the global environment to empty
     globalEnvironment = {};
     return (this.interval.contents.match(/^(\s)*$/)

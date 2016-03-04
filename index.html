@@ -67,9 +67,9 @@ button.selector {
 <script type="text/ohm-js">
 Bash {
   Script
-      = (Shebang "\n")? allwhitespace* CmdSequence? semicolon*
+      = (Shebang)? allwhitespace* CmdSequence? semicolon*
   CmdSequence = NonemptyListOf<Cmd, semicolon>
-  Shebang = "#!" (~"sh" any)* "sh"
+  Shebang = "#!" (~"sh" any)* "sh\n"
 
   Cmd = NoSemicolonCmd
       | SemicolonCmd
