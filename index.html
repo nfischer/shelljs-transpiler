@@ -148,38 +148,15 @@ Bash {
       = SimpleCmd comment
 
   SimpleCmd
-      = SimpleCmdBase Redirect*
+      = SimpleCmdBase Redirect* "&"?
 
   Redirect
       = ">" Bashword
       | ">>" Bashword
 
   SimpleCmdBase
-      = BasicCmd
-      | CdCmd
-      | PwdCmd
-      | LsCmd
-      | FindCmd
-      | CatCmd
-      | WhichCmd
-      | TestCmd
-      | EchoCmd
-      | HeadCmd
-      | PushdCmd
-      | PopdCmd
-      | DirsCmd
-      | LnCmd
-      | ExitCmd
-      | ChmodCmd
-      | TouchCmd
-      | SortCmd
-      | SetCmd
-      | SedCmd
-      | ExecCmd
-
-  BasicCmd = BasicName options? Bashword+
-  CdCmd    = "cd" Bashword?
-  PwdCmd   = "pwd"
+      = TestCmd
+      | CmdName Bashword* -- std
 
   TestCmd
       = "test " "!"? UnaryOp Bashword               -- unary
@@ -193,39 +170,9 @@ Bash {
       = "[[" "!"? Bashword BinaryOp Bashword "]]"
       | "[" "!"? Bashword BinaryOp Bashword "]"
 
-  FindCmd  = "find "  Bashword+
-  LsCmd    = "ls"     options? Bashword*
-  CatCmd   = "cat"    Bashword*
-  WhichCmd = "which " Bashword
-  EchoCmd  = "echo"   Bashword*
-  HeadCmd  = "head"   options? Bashword*
-  PushdCmd = "pushd"  options? Bashword?
-  PopdCmd  = "popd"   options? Bashword?
-  DirsCmd  = "dirs"   (options | Bashword)?
-  LnCmd    = "ln "    options? Bashword Bashword
-  ExitCmd  = "exit"   Bashword?
-  ChmodCmd = "chmod " Bashword Bashword
-  TouchCmd = "touch " options? Bashword
-  SortCmd  = "sort"   options? Bashword*
-  SetCmd   = "set "   modOptions
-  SedCmd   = "sed "   sedRegex Bashword*
-  ExecCmd  = CmdName Arglist
-
-  sedRegex
-      = "'s/" (~"/" ~"'" any)* "/" (~"/" ~"'" any)* ("/" "g"?)? "'"
-      | "\"s/" (~"/" ~"\"" any)* "/" (~"/" ~"\"" any)* ("/" "g"?)? "\""
-  BasicName
-      = "cp "
-      | "rm "
-      | "mkdir "
-      | "mv "
-      | "grep "
-
   CmdName = (~keyword Bashword)
-  Arglist = Bashword*
   comment = space* "#" (~"\n" any)*
-  options = "-" letter+
-  modOptions = ("-" |"+" ) letter+
+  /* modOptions = ("-" |"+" ) letter+ */
 
   Bashword
       = Call
@@ -286,7 +233,7 @@ Bash {
       = (~("\"" | "\\") (reference | any))
       | "\\" any -- escape
 
-  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")"
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")" | "&"
   Export
       = "export " Assignment -- assign
       | "export " id -- bare

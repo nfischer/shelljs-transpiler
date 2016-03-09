@@ -34,6 +34,20 @@ function nl(ind_count) {
   return ret;
 }
 
+function convertSed() {
+  var args = Array.prototype.slice.call(arguments, 0);
+  var match = args[0].match(/^(')s\/([^/]*)\/([^/]*)(\/(g?))?\1$/);
+  if (!match) {
+    throw new Error('Unable to match sed');
+  } else {
+    return "sed(/" +
+      match[2] + "/" + (match[5] || '') +
+      ", '" + match[3] + "'" +
+      (args.length > 1 ? ', ' + args.slice(1).join(', ') : '') +
+      ')';
+  }
+}
+
 function ind(ind_count) {
   var ret = '';
   for (var k=0; k < ind_count; k++)
@@ -177,13 +191,55 @@ var source2sourceSemantics = {
         '.' +
         c2.toJS(0).replace(/^shell\./, '');
   },
-  SimpleCmd: function(scb, redirects) {
-    return scb.toJS(this.args.indent) +
+  SimpleCmd: function(scb, redirects, ampersand) {
+    var ret = scb.toJS(this.args.indent) +
         redirects.toJS(this.args.indent).join('');
+    if (ampersand.interval.contents)
+      ret = ret.replace(')', ', {async: true})');
+    return ret;
   },
-  SimpleCmdBase: function(specific_cmd) {
-    return (globalInclude ? '' : 'shell.') +
-        specific_cmd.toJS(this.args.indent);
+  SimpleCmdBase: function(scb) { return scb.toJS(this.args.indent); },
+  SimpleCmdBase_std: function(firstword, args) {
+    var cmd = firstword.interval.contents;
+    var argList = args.toJS(0);
+    var cmdLookup = {
+      cp: [1],
+      rm: [1],
+      mkdir: [1],
+      mv: [1],
+      grep: [1],
+      cd: [0, 1],
+      pwd: [0, 0],
+      ls: [0],
+      find: [1],
+      cat: [0],
+      which: [1, 1],
+      echo: [0],
+      head: [0],
+      pushd: [0, 2],
+      popd: [0, 2],
+      dirs: [0, 1],
+      ln: [2, 3],
+      exit: [0, 1],
+      chmod: [2],
+      touch: [1],
+      sort: [0],
+      set: [1, 1],
+      sed: [1]
+    };
+    if (cmd in cmdLookup && cmdLookup[cmd][0] <= argList.length && (!cmdLookup[cmd].hasOwnProperty(1) || cmdLookup[cmd][1] >= argList.length)) {
+      if (cmd === 'sed') {
+        return convertSed.apply(this, argList);
+      } else {
+        return cmd + '(' + argList.join(', ') + ')';
+      }
+    } else {
+      return "exec('" +
+          this.interval.contents
+            .replace(/\\/g, '\\\\') // back slashes
+            .replace(/'/g, "\\'") +   // quotes
+            "')";
+    }
   },
   Redirect: function(arrow, bw) {
     return (arrow.interval.contents.match('>>') ? '.toEnd(' : '.to(') +
@@ -192,91 +248,6 @@ var source2sourceSemantics = {
   CmdWithComment: function(cmd, comment) {
     return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
   },
-  CdCmd: function(_, arg) {
-    return "cd(" +
-        (arg.interval.contents ? arg.toJS(0) : '') +
-        ")";
-  },
-  PwdCmd: function(_) { return 'pwd()'; },
-  LsCmd: function(_, opts, args) {
-    return 'ls(' + cmd_helper(opts, args) + ')';
-  },
-  FindCmd: function(_, args) {
-    return "find(" + cmd_helper(null, args) + ")";
-  },
-  BasicCmd: function(cname, opts, args) {
-    return cname.interval.contents.trim() + '(' + cmd_helper(opts, args) + ')';
-  },
-  CatCmd: function(_, args) {
-    return 'cat(' + cmd_helper(null, args) + ')';
-  },
-  WhichCmd: function(_, arg) {
-    return 'which(' + arg.toJS(0) + ')';
-  },
-  EchoCmd: function(_, args) {
-    return 'echo(' + cmd_helper(null, args) + ')';
-  },
-  HeadCmd: function(_, opts, args) {
-    return 'head(' + cmd_helper(opts, args) + ')';
-  },
-  PushdCmd: function(_, opts, args) {
-    return 'pushd(' + cmd_helper(opts, args) + ')';
-  },
-  PopdCmd: function(_, opts, args) {
-    return 'popd(' + cmd_helper(opts, args) + ')';
-  },
-  DirsCmd: function(_, args) {
-    return 'dirs(' + cmd_helper(null, args) + ')';
-  },
-  LnCmd: function(_, opts, src, dest) {
-    var params = [];
-    if (opts.interval.contents)
-      params.push(opts.toJS(this.args.indent));
-    params.push(src.toJS(this.args.indent));
-    params.push(dest.toJS(this.args.indent));
-    return 'ln(' + params.join(', ') + ')';
-  },
-  ExitCmd: function(_, code) {
-    return 'exit(' + code.toJS(0) + ')';
-  },
-  ChmodCmd: function(_, arg1, arg2) {
-    return 'chmod(' + cmd_helper(arg1, arg2) + ')';
-  },
-  TouchCmd: function(_, opts, arg) {
-    return 'touch(' + cmd_helper(opts, arg) + ')';
-  },
-  SortCmd: function(_, opts, args) {
-    return 'sort(' + cmd_helper(opts, args) + ')';
-  },
-  ExecCmd: function(firstword, args) {
-    return "exec('" +
-        this.interval.contents
-          .replace(/\\/g, '\\\\') // back slashes
-          .replace(/'/g, "\\'") +   // quotes
-          "')";
-  },
-  SetCmd: function(_, opts) {
-    return "set('" +
-        opts.interval.contents +
-        "')";
-  },
-  SedCmd: function(_prefix, sRegex, files) {
-    return "sed(" +
-        sRegex.toJS(0) +
-        (files.interval.contents ? ', ' + files.toJS(0).join(', ') : '') +
-        ')';
-  },
-  sedRegex: function(_prefix, pat, _sl1, sub, _sl2, g, _qu) {
-    return ('/' + pat.interval.contents +
-        (g.interval.contents || '/') +
-        ", '" +
-        sub.interval.contents +
-        "'").replace(/\\\+/g, '+');
-  },
-  Arglist: function(_) {
-    return this.interval.contents;
-  },
-  options: function(_minus, _letters) { return "'" + this.interval.contents + "'"; },
   // TODO(nate): make this preserve leading whitespace
   comment: function(leadingWs, _, msg) { return leadingWs.interval.contents + '//' + msg.interval.contents; },
   Bashword: function(val) {
