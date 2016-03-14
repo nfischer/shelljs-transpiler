@@ -171,8 +171,8 @@ Bash {
       = "export " Assignment -- assign
       | "export " id -- bare
   Assignment
-      = ("local " | "readonly ")? idEqual Bashword?
-  idEqual = id_std "="
+      = ("local " | "readonly ")? #(id_std "=" ~space) Bashword?
+
   id  = (~keyword (letter | "_") (alnum | "_")*) -- std
       | digit+ -- arg
       | "?" -- error

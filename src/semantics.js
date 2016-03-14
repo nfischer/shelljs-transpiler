@@ -335,9 +335,6 @@ var source2sourceSemantics = {
       ret = '_$' + ret; // this can't be a valid bash id, so we avoid conflicts
     return ret;
   },
-  idEqual: function(id, _) {
-    return id.toJS(0) + '=';
-  },
   Call: function(_s, cmd, _e) { return cmd.toJS(0).replace(/;$/, ''); },
   arrayReference: function(_s, arrId, _e) { return arrId.toJS(0); },
   arrayLength: function(_s, arrId, _e) { return arrId.toJS(0) + '.length'; },
@@ -355,11 +352,11 @@ var source2sourceSemantics = {
     return (id.match(/env\./) ? '' : env(id) + ' = ') +
         assign_str
   },
-  Assignment: function(varType, nameEqual, expr) {
+  Assignment: function(varType, name, _eq, expr) {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
     var ret;
-    var varName = nameEqual.toJS(0).trim().slice(0, -1); // trim off '='
+    var varName = name.toJS(0).trim();
     if (varName.match(/^(shell.)?env.|^process.argv./) || globalEnvironment[varName]) {
       ret = '';
     } else {
