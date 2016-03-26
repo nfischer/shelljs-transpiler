@@ -11,5 +11,8 @@ var hints = [
   "Try toggling the checkbox above",
   "Concatenate strings and variables:<br>echo \"foo${bar}baz\"",
   "Try out unary tests:<br>if [ -f file.txt ]...",
+  "Try out equality:<br>if [ $foo -eq $bar ]...",
+  "\"${#foo}\"",
+  "void='some text'; echo $var",
   "Try writing a shebang:<br>#!/bin/bash"
 ];

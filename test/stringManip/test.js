@@ -11,3 +11,4 @@ echo(foo.replace(/(?:)/g, ""));
 echo(foo.replace(/he/g, ""));
 echo(foo.replace(/he/g, ""));
 echo(foo.replace(/he/g, "she"));
+echo(foo.length);

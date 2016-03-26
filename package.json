@@ -13,7 +13,8 @@
   ],
   "main": "./bin/transpile.js",
   "scripts": {
-    "test": "node ./scripts/runtests.js"
+    "test": "node ./scripts/runtests.js",
+    "deploy": "node ./scripts/deploy.js"
   },
   "author": "Nate Fischer <ntfschr@gmail.com>",
   "repository": {
@@ -25,6 +26,7 @@
     "shjs": "./bin/shjs"
   },
   "devDependencies": {
+    "ohm-build": "github:nfischer/ohm-build",
     "gulp": "^3.9.1"
   },
   "dependencies": {

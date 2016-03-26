@@ -7,45 +7,32 @@ BashToShellJS
 > -- @arturadib, [ShellJS
 > README](https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs)*
 
-This is a source-to-source translator from Bash to
-[ShellJS](https://github.com/shelljs/shelljs). Try it out [live on the
-web!](https://nfischer.github.io/BashToShellJS/).
+Want to try out [ShellJS](https://github.com/shelljs/shelljs) but don't want to
+go through the effort of porting all your scripts? Look no further.
 
-You can also clone this repository to translate files on your local machine
-directly with the `transpile.js` executable:
+Automagically transpile your Bash scripts to ShellJS using [this web-based
+transpiler](https://nfischer.github.io/BashToShellJS/), no downloads necessary.
+Just type, copy-paste, or drag-and-drop your favorite shell script and copy
+out the generated results.
 
-```Bash
-# Make sure to use --recursive to download the submodule
-$ git clone --recursive https://github.com/nfischer/BashToShellJS.git
-```
-
-Building the project
---------------------
-
-This project uses `gulp` as its task-runner. It depends on a git submodule and
-some npm packages, which can be installed like so:
-
-```Bash
-$ git clone --recursive https://github.com/nfischer/BashToShellJS.git
-$ cd BashToShellJS/
-$ npm install -g gulp-cli
-$ npm install
-$ gulp # This compiles index.html from src/index.generator.html
-```
+Have a lot of scripts to transpile? Clone this repository to make use of the
+`transpile.js` executable to programmatically transpile your scripts. Check out
+the [Building the project](#building-the-project) section below for installation
+steps.
 
 ShellJS compatibility
 ---------------------
 
 > What version of ShellJS is this compatible with? Can I run this code?
 
-These are good questions to which I have no good answer. Unfortunately, I'm also
-one of the maintainers of ShellJS. So I have a tendency to translate to "what
-ShellJS will soon become," instead of "what ShellJS currently is." The output
-here is designed to be compatible with what will hopefully be ShellJS v0.7+.
-This is because v0.7 will have support for many more features of Bash (pipes,
-globbing, return codes, etc.), which makes for more interesting translations. I
-openly admit that some of these translations are to features that I haven't
-actually written yet for ShellJS.
+These are good questions... to which I have no good answer. I'm currently one of
+the maintainers of ShellJS, so I have a tendency to translate to "what ShellJS
+will soon become," instead of "what ShellJS currently is." The output here is
+designed to be compatible with what will hopefully be ShellJS v0.7+.  This is
+because v0.7 will have support for many more Bash features (pipes, globbing,
+return codes, etc.), which makes for more interesting translations. I openly
+admit that some of these translations are to features that I haven't actually
+written yet for ShellJS.
 
 The downside is that there are no guarantees that a given translation will
 actually run on any current release of ShellJS. The upside is that as I develop
@@ -71,3 +58,17 @@ This lets me work with my grammar in a separate file, and also expose its
 contents to node more easily. Aside from the convenience of allowing my grammar
 to be in a separate file, this makes it pretty straightforward to run unit
 tests, which is tremendously helpful.
+
+Building the project
+--------------------
+
+This project uses `gulp` as its task-runner. It depends on a git submodule and
+some npm packages, which can be installed like so:
+
+```Bash
+$ git clone --recursive https://github.com/nfischer/BashToShellJS.git
+$ cd BashToShellJS/
+$ npm install -g gulp-cli
+$ npm install
+$ gulp # This compiles index.html from src/index.generator.html
+```
