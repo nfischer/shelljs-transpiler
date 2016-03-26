@@ -143,7 +143,11 @@ Bash {
       = "-"? digit+
 
   bareWord
-      = (~badchars (reference | any))+
+      = barewordChar+
+
+  barewordChar
+      = (~(badchars | "\\") (reference | any)) -- normal
+      | "\\" any -- escape
 
   keyword
       = keywordRoot ~alnum
@@ -159,7 +163,7 @@ Bash {
   doubleString = "\"" notDoubleQuote* "\""
 
   notSingleQuote
-      = (~("'" | "\\") any)
+      = (~"'" any)
       | "\\" any -- escape
 
   notDoubleQuote

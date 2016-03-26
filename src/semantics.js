@@ -280,20 +280,22 @@ var source2sourceSemantics = {
     return '$$' + id.toJS(0) + '.length';
   },
   notDoubleQuote_escape: function(_, _2) { return this.interval.contents; },
-  bareWord: function(w) {
-    var ret = '';
-    w.toJS(0).forEach(function (atom) {
-      if (atom.substr(0, 2) === '$$') { // a hack
-        // This is a variable
-        ret += "' + " + atom.slice(2) + " + '";
-      } else {
-        // This is just a character in the bareWord
-        ret += atom;
-      }
-    });
-    // Clean it up
-    ret = ("'" + ret + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
-    return ret;
+  bareWord: function(chars) {
+    return ("'" + chars.toJS(0).join('') + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+  },
+  barewordChar: function(ch) { return ch.toJS(0); },
+  barewordChar_normal: function(atom) {
+    atom = atom.toJS(0);
+    if (atom.substr(0, 2) === '$$') { // a hack
+      // This is a variable
+      return "' + " + atom.slice(2) + " + '";
+    } else {
+      // This is just a character in the bareWord
+      return atom;
+    }
+  },
+  barewordChar_escape: function(_, c) {
+    return c.toJS(0);
   },
   stringLiteral: function(string) { return string.toJS(this.args.indent); },
   singleString: function(_sq, val, _eq) {

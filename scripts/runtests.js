@@ -34,7 +34,7 @@ m = bash.match('|echo|');
 assert.ok(m.failed());
 
 // Escaped characters
-m = bash.match("echo \\'Hello  \\' world\\'");
+m = bash.match("echo 'Hello  \\' world'");
 assert.ok(m.failed());
 
 //
