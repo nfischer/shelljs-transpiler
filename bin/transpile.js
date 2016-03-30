@@ -14,6 +14,8 @@ var contents = fs.readFileSync(path.join(__dirname, '..', 'src', 'bash.ohm'));
 var bash = ohm.grammar(contents);
 
 // Load in script, ensure a trailing newline
+if (typeof argv.r === 'string')
+  argv._.unshift(argv.r);
 var inputFile = argv._[0]
 if (!inputFile) {
   console.error('Usage: node transpile.js <input>');
@@ -35,7 +37,7 @@ s.addOperation(
 var n = s(m);
 
 var shellOutput = n.toJS(0);
-if (argv['r']) { // run it!
+if (argv.r) { // run it!
   exec('node -e ' + JSON.stringify(shellOutput
       .replace(/#!.*\n/, '')
       .replace(/\n/g, '')));
