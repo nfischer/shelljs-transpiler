@@ -1,7 +1,7 @@
-BashToShellJS
-=============
+shelljs-transpiler
+==================
 
-[![Build Status](https://travis-ci.org/nfischer/BashToShellJS.svg?branch=master)](https://travis-ci.org/nfischer/BashToShellJS)
+[![Build Status](https://travis-ci.org/nfischer/shelljs-transpiler.svg?branch=master)](https://travis-ci.org/nfischer/shelljs-transpiler)
 
 > *"Say goodbye to those gnarly Bash scripts!"
 > -- @arturadib, [ShellJS
@@ -10,10 +10,10 @@ BashToShellJS
 Want to try out [ShellJS](https://github.com/shelljs/shelljs) but don't want to
 go through the effort of porting all your scripts? Look no further.
 
-Automagically transpile your Bash scripts to ShellJS using [this web-based
-transpiler](https://nfischer.github.io/BashToShellJS/), no downloads necessary.
-Just type, copy-paste, or drag-and-drop your favorite shell script and copy
-out the generated results.
+Automagically transpile your Bash scripts to ShellJS. Try it out [here on the
+web](https://nfischer.github.io/shelljs-transpiler/), no downloads necessary.  Just
+type, copy-paste, or drag-and-drop your favorite shell script and copy out the
+generated results.
 
 Have a lot of scripts to transpile? Clone this repository to make use of the
 `transpile.js` executable to programmatically transpile your scripts. Check out
@@ -66,8 +66,8 @@ This project uses `gulp` as its task-runner. It depends on a git submodule and
 some npm packages, which can be installed like so:
 
 ```Bash
-$ git clone --recursive https://github.com/nfischer/BashToShellJS.git
-$ cd BashToShellJS/
+$ git clone --recursive https://github.com/nfischer/shelljs-transpiler.git
+$ cd shelljs-transpiler/
 $ npm install -g gulp-cli
 $ npm install
 $ gulp # This compiles index.html from src/index.generator.html
