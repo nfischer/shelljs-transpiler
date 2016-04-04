@@ -22,9 +22,7 @@ steps.
 
 ### Like the project?
 
-Feel free to
-[contribute](file:///home/nate/programming/Transpiler/README.md#contributing) or
-give it a star on Github.
+Feel free to [contribute](#contributing) or give it a star on Github.
 
 ShellJS compatibility
 ---------------------
