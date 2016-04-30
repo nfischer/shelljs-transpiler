@@ -228,7 +228,7 @@ ls().forEach(function (test) {
   if (error())
     echo(test + 'is not a directory');
   try {
-    m = bash.match(cat(ls('*.sh')[0]));
+    m = bash.match(cat(ls('*.sh')[0]).toString());
     assert.ok(m.succeeded());
     assert.equal(s(m).toJS(0), cat(ls('*.js')[0]));
   } catch (e) {
