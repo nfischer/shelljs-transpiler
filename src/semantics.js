@@ -115,7 +115,8 @@ var source2sourceSemantics = {
       ';' + update.interval.contents;
   },
   ForCommand_for_each: function(_for, id, _in, call, _sc, _dws, cmd2, done) {
-    return call.toJS(this.args.indent) + '.forEach(function (' + id.interval.contents + ') {' +
+    var mycall = call.toJS(this.args.indent).replace(/\.replace\(.*\)/, '');
+    return mycall + '.forEach(function (' + id.interval.contents + ') {' +
         nl(this.args.indent+1) + cmd2.toJS(this.args.indent+1) +
         nl(this.args.indent) + '});';
   },
@@ -337,7 +338,9 @@ var source2sourceSemantics = {
       ret = '_$' + ret; // this can't be a valid bash id, so we avoid conflicts
     return ret;
   },
-  Call: function(_s, cmd, _e) { return cmd.toJS(0).replace(/;$/, ''); },
+  Call: function(_s, cmd, _e) {
+    return cmd.toJS(0).replace(/;$/, '') + ".replace(/\\n+$/, '')";
+  },
   arrayReference: function(_s, arrId, _e) { return arrId.toJS(0); },
   arrayLength: function(_s, arrId, _e) { return arrId.toJS(0) + '.length'; },
   Export: function(e) {
@@ -366,10 +369,9 @@ var source2sourceSemantics = {
       globalEnvironment[varName] = true; // mark it as declared
     }
 
-    ret += varName + " = " +
-        (expr.toJS(this.args.indent).toString()
-          ? expr.toJS(this.args.indent)
-          : "''");
+    var myexpr = expr.toJS(this.args.indent).toString();
+    var ic = expr.interval.contents;
+    ret += varName + " = " + (myexpr || "''");
     return ret;
   },
   allwhitespace: function(_) {
