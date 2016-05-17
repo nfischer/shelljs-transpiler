@@ -9,7 +9,9 @@ Bash {
       | ("" ~keyword)
 
   NoSemicolonCmd
-      = IfCommand
+      = FunctionDecl
+      | CodeBlock
+      | IfCommand
       | comment
       | ForCommand
       | WhileCommand
@@ -25,11 +27,11 @@ Bash {
       = IfCase ElseIfThen* ElseCase? EndIf
 
   IfCase
-      = ifwithspace Conditional semicolon thenwithspace CmdSequence
+      = "if" #(allwhitespace+) Conditional semicolon "then" #(allwhitespace+) CmdSequence
   ElseIfThen
-      = semicolon elifwithspace Conditional semicolon thenwithspace CmdSequence
+      = semicolon "elif" #(allwhitespace+) Conditional semicolon "then" #(allwhitespace+) CmdSequence
   ElseCase
-      = semicolon elsewithspace CmdSequence
+      = semicolon "else" #(allwhitespace+) CmdSequence
   EndIf = semicolon "fi"
 
   Conditional
@@ -37,37 +39,35 @@ Bash {
       | SimpleCmd -- cmd
 
   ForCommand
-      = "for" "((" ControlStruct "))" semicolon dowithspace CmdSequence Done
+      = "for" "((" ControlStruct "))" semicolon "do" #(allwhitespace+) CmdSequence Done
           -- c_style
-      | "for" id "in" (Call | arrayReference) semicolon dowithspace CmdSequence Done          -- for_each
+      | "for" id "in" (Call | arrayReference) semicolon "do" #(allwhitespace+) CmdSequence Done          -- for_each
 
   ControlStruct
       = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
 
   WhileCommand
-      = whilewithspace Conditional semicolon dowithspace CmdSequence Done
-
-  whilewithspace = "while" space+
-  dowithspace = "do" allwhitespace+
+      = "while" #(allwhitespace+) Conditional semicolon "do" #(allwhitespace+) CmdSequence Done
 
   Done = semicolon "done"
 
-  BinaryOp (Binary operator)
-      = Equal | NotEqual | LessThan | GreaterThan | LessThanEq | GreaterThanEq
-  Equal         = "=="  | "=" | "-eq"
-  NotEqual      = "!="  | "-ne"
-  LessThan      = "-lt" | "<"
-  GreaterThan   = "-gt" | ">"
-  LessThanEq    = "-le" | "<="
-  GreaterThanEq = "-ge" | ">="
+  FunctionDecl
+      = ("function" #(space+))? id_std "()"  allwhitespace* CodeBlock // "()"
+      | "function"  #(space+)   id_std "()"? allwhitespace* CodeBlock // "function"
+
+  CodeBlock
+      = "{" allwhitespace* CmdSequence allwhitespace* "}"
+
+  BinaryOp (Binary infix operator)
+      = "=="  | "=" | "-eq"
+      | "!="  | "-ne"
+      | "-lt" | "\\<"
+      | "-gt" | "\\>"
+      | "-le"
+      | "-ge"
 
   UnaryOp (Unary operator)
       = "-z" | "-n" | "-b" | "-c" | "-d" | "-e" | "-f" | "-L" | "-p" | "-S"
-
-  ifwithspace   = "if"   allwhitespace+
-  elifwithspace = "elif" allwhitespace+
-  elsewithspace = "else" allwhitespace+
-  thenwithspace = "then" allwhitespace+
 
   SequenceCmd
       = NoSemicolonCmd semicolon Cmd -- nosemicolon
@@ -96,12 +96,16 @@ Bash {
       | "test " "!"? Bashword BinaryOp Bashword     -- binary
       | TestCmd_unaryBracket
       | TestCmd_binaryBracket
+      | TestCmd_str
   TestCmd_unaryBracket
       = "[[" "!"? UnaryOp Bashword "]]"
       | "[" "!"? UnaryOp Bashword "]"
   TestCmd_binaryBracket
       = "[[" "!"? Bashword BinaryOp Bashword "]]"
       | "[" "!"? Bashword BinaryOp Bashword "]"
+  TestCmd_str
+      = "[[" "!"? Bashword "]]"
+      | "[" "!"? Bashword "]"
 
   CmdName = (~keyword Bashword)
   comment = space* "#" (~"\n" any)*
@@ -153,7 +157,7 @@ Bash {
       = keywordRoot ~alnum
 
   keywordRoot
-      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do"
+      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do" | "function"
 
   stringLiteral
       = singleString
@@ -170,7 +174,7 @@ Bash {
       = (~("\"" | "\\") (reference | any))
       | "\\" any -- escape
 
-  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")" | "&"
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")" | "&" | "{" | "}"
   Export
       = "export " Assignment -- assign
       | "export " id -- bare

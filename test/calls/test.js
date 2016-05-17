@@ -1,4 +1,5 @@
-var foo = pwd();
-foo = pwd();
-foo = pwd();
-foo = pwd();
+var foo = pwd().replace(/\n+$/, '');
+foo = pwd().replace(/\n+$/, '');
+foo = pwd().replace(/\n+$/, '');
+foo = pwd().replace(/\n+$/, '');
+foo = 'string\n';

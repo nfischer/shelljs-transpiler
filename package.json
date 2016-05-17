@@ -26,11 +26,11 @@
     "shjs": "./bin/shjs"
   },
   "devDependencies": {
-    "ohm-build": "github:nfischer/ohm-build",
+    "ohm-builder": "github:nfischer/ohm-builder",
     "gulp": "^3.9.1"
   },
   "dependencies": {
     "minimist": "^1.2.0",
-    "shelljs": "^0.6.0"
+    "shelljs": "^0.7.0"
   }
 }
