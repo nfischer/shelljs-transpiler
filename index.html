@@ -163,12 +163,16 @@ Bash {
       | "test " "!"? Bashword BinaryOp Bashword     -- binary
       | TestCmd_unaryBracket
       | TestCmd_binaryBracket
+      | TestCmd_str
   TestCmd_unaryBracket
       = "[[" "!"? UnaryOp Bashword "]]"
       | "[" "!"? UnaryOp Bashword "]"
   TestCmd_binaryBracket
       = "[[" "!"? Bashword BinaryOp Bashword "]]"
       | "[" "!"? Bashword BinaryOp Bashword "]"
+  TestCmd_str
+      = "[[" "!"? Bashword "]]"
+      | "[" "!"? Bashword "]"
 
   CmdName = (~keyword Bashword)
   comment = space* "#" (~"\n" any)*
