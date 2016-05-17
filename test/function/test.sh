@@ -14,3 +14,5 @@ function bar
   cat file.txt
 }
 function baz (){ ls; }
+# function calls
+foo 'hi'

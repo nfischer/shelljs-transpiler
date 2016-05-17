@@ -14,3 +14,5 @@ function bar(..._$args) {
 }
 function baz(..._$args) {ls();
 }
+// function calls
+foo('hi');

@@ -74,6 +74,7 @@ function envGuess(str) {
 
 var globalInclude = true;
 var globalEnvironment = {};
+var allFunctions = {};
 
 var source2sourceSemantics = {
   Cmd: function(e) {
@@ -129,7 +130,9 @@ var source2sourceSemantics = {
     return nl(this.args.indent) + '}';
   },
   FunctionDecl: function(_fun, _sp1, id, _paren, _sp2, block) {
-    return 'function ' + id.toJS(0) + '(..._$args) ' +
+    var idStr = id.toJS(0);
+    allFunctions[idStr] = true;
+    return 'function ' + idStr + '(..._$args) ' +
         block.toJS(this.args.indent);
   },
   TestCmd_unary: function(_, negate, unop, bw) {
@@ -193,8 +196,10 @@ var source2sourceSemantics = {
     return ret;
   },
   Script: function(shebang, space, cmds, _trailing) {
-    // Always reset the global environment to empty
+    // Initialze values
     globalEnvironment = {};
+    allFunctions = {};
+
     return (this.interval.contents.match(/^(\s)*$/)
           ? ''
           : shebang.toJS(this.args.indent) +
@@ -263,11 +268,14 @@ var source2sourceSemantics = {
         return cmd + '(' + argList.join(', ') + ')';
       }
     } else {
-      return "exec('" +
-          this.interval.contents
-            .replace(/\\/g, '\\\\') // back slashes
-            .replace(/'/g, "\\'") +   // quotes
-            "')";
+      if (allFunctions[cmd]) // if this is a function call
+        return cmd + '(' + argList.join(', ') + ')';
+      else
+        return "exec('" +
+            this.interval.contents
+              .replace(/\\/g, '\\\\') // back slashes
+              .replace(/'/g, "\\'") +   // quotes
+              "')";
     }
   },
   Redirect: function(arrow, bw) {
