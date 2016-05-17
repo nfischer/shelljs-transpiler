@@ -74,6 +74,7 @@ function envGuess(str) {
 
 var globalInclude = true;
 var globalEnvironment = {};
+var allFunctions = {};
 
 var source2sourceSemantics = {
   Cmd: function(e) {
@@ -89,15 +90,15 @@ var source2sourceSemantics = {
       elc.toJS(this.args.indent) +
       ef.toJS(this.args.indent);
   },
-  IfCase: function(iws, cond, _sc, _tws, cmds) {
+  IfCase: function(_if, _s, cond, _sc, _then, _s2, cmds) {
     return 'if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent+1) +
         cmds.toJS(this.args.indent+1);
   },
-  ElseIfThen: function(_sc1, eiws, cond, _sc2, _tws, cmd) {
+  ElseIfThen: function(_sc1, _ei, _s, cond, _sc2, _then, _s2, cmd) {
     return nl(this.args.indent) + '} else if (' + cond.toJS(this.args.indent) +
         ') {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent+1);
   },
-  ElseCase: function(_sc, ews, cmd) {
+  ElseCase: function(_sc, _else, _space, cmd) {
     return nl(this.args.indent) + '} else {' + nl(this.args.indent+1) +
         cmd.toJS(this.args.indent+1);
   },
@@ -105,7 +106,7 @@ var source2sourceSemantics = {
     return nl(this.args.indent) + '}';
   },
   ForCommand: function(f) { return f.toJS(this.args.indent); },
-  ForCommand_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _dws, cmd, done) {
+  ForCommand_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _do, _s, cmd, done) {
     return 'for (' + ctrlstruct.toJS(0) + ') {' +
         nl(this.args.indent+1) + cmd.toJS(this.args.indent+1) +
         nl(this.args.indent) + '}';
@@ -114,19 +115,25 @@ var source2sourceSemantics = {
     return assign.toJS(0) + ';' + id.interval.contents + binop.toJS(0) + val.toJS(0) +
       ';' + update.interval.contents;
   },
-  ForCommand_for_each: function(_for, id, _in, call, _sc, _dws, cmd2, done) {
+  ForCommand_for_each: function(_for, id, _in, call, _sc, _do, _s, cmd2, done) {
     var mycall = call.toJS(this.args.indent).replace(/\.replace\(.*\)/, '');
     return mycall + '.forEach(function (' + id.interval.contents + ') {' +
         nl(this.args.indent+1) + cmd2.toJS(this.args.indent+1) +
         nl(this.args.indent) + '});';
   },
-  WhileCommand: function(_wws, cond, _sc, _dws, cmd, done) {
+  WhileCommand: function(_w, _s, cond, _sc, _do, _s2, cmd, done) {
     return 'while (' + cond.toJS(this.args.indent) + ') {' +
         nl(this.args.indent+1) + cmd.toJS(this.args.indent+1) +
         done.toJS(this.args.indent);
   },
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
+  },
+  FunctionDecl: function(_fun, _sp1, id, _paren, _sp2, block) {
+    var idStr = id.toJS(0);
+    allFunctions[idStr] = true;
+    return 'function ' + idStr + '(..._$args) ' +
+        block.toJS(this.args.indent);
   },
   TestCmd_unary: function(_, negate, unop, bw) {
     return negate.interval.contents +
@@ -163,16 +170,36 @@ var source2sourceSemantics = {
   Conditional_cmd: function(sc) {
     return sc.toJS(0) + '.code === 0';
   },
-  BinaryOp: function(op) { return op.toJS(this.args.indent); },
-  Equal: function(_) { return '==='; },
-  NotEqual: function(_) { return '!=='; },
-  LessThan: function(_) { return '<'; },
-  GreaterThan: function(_) { return '>'; },
-  LessThanEq: function(_) { return '<='; },
-  GreaterThanEq: function(_) { return '>='; },
+  CodeBlock: function(_b1, s1, commandSequence, _s2, _b2) {
+    var spaceIc = s1.interval.contents;
+    return ind(this.args.indent) + '{' +
+        (spaceIc && (spaceIc + ind(this.args.indent+1))) +
+        commandSequence.toJS(this.args.indent+1).replace(/ *$/, '') + '}';
+  },
+  BinaryOp: function(op) {
+    var opTable = {
+      '=='  : '===',
+      '='   : '===',
+      '-eq' : '===',
+      '!='  : '!==',
+      '-ne' : '!==',
+      '\\<' : '<',
+      '-lt' : '<',
+      '\\>' : '>',
+      '-gt' : '>',
+      '-le' : '<=',
+      '-ge' : '>=',
+    };
+    var ret = opTable[this.interval.contents];
+    if (typeof ret === 'undefined')
+      throw new Error('Unknown binary infix operator');
+    return ret;
+  },
   Script: function(shebang, space, cmds, _trailing) {
-    // Always reset the global environment to empty
+    // Initialze values
     globalEnvironment = {};
+    allFunctions = {};
+
     return (this.interval.contents.match(/^(\s)*$/)
           ? ''
           : shebang.toJS(this.args.indent) +
@@ -241,11 +268,14 @@ var source2sourceSemantics = {
         return cmd + '(' + argList.join(', ') + ')';
       }
     } else {
-      return "exec('" +
-          this.interval.contents
-            .replace(/\\/g, '\\\\') // back slashes
-            .replace(/'/g, "\\'") +   // quotes
-            "')";
+      if (allFunctions[cmd]) // if this is a function call
+        return cmd + '(' + argList.join(', ') + ')';
+      else
+        return "exec('" +
+            this.interval.contents
+              .replace(/\\/g, '\\\\') // back slashes
+              .replace(/'/g, "\\'") +   // quotes
+              "')";
     }
   },
   Redirect: function(arrow, bw) {

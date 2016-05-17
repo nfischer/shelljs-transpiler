@@ -9,3 +9,6 @@ if (foo) {
 if (!('')) {
   ls();
 }
+if (foo < 'l') {
+  cat('file.txt');
+}

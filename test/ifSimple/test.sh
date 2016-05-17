@@ -5,3 +5,6 @@ fi
 if [ ! "" ]; then
   ls
 fi
+if [ "$foo" \< "l" ]; then
+  cat file.txt
+fi
