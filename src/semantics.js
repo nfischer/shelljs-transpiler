@@ -148,6 +148,12 @@ var source2sourceSemantics = {
         ? "!(" + ret + ")"
         : ret;
   },
+  TestCmd_str: function(_ob, negate, bw, _cb) {
+    var ret = bw.toJS(this.args.indent);
+    return negate.interval.contents
+        ? "!(" + ret + ")"
+        : ret;
+  },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
     if (!globalInclude && ret.indexOf('test') > -1)
