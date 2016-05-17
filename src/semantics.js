@@ -128,6 +128,10 @@ var source2sourceSemantics = {
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
+  FunctionDecl: function(_fun, _sp1, id, _paren, _sp2, block) {
+    return 'function ' + id.toJS(0) + '(..._$args) ' +
+        block.toJS(this.args.indent);
+  },
   TestCmd_unary: function(_, negate, unop, bw) {
     return negate.interval.contents +
         "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";

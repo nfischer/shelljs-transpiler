@@ -9,7 +9,8 @@ Bash {
       | ("" ~keyword)
 
   NoSemicolonCmd
-      = CodeBlock
+      = FunctionDecl
+      | CodeBlock
       | IfCommand
       | comment
       | ForCommand
@@ -49,6 +50,10 @@ Bash {
       = "while" #(allwhitespace+) Conditional semicolon "do" #(allwhitespace+) CmdSequence Done
 
   Done = semicolon "done"
+
+  FunctionDecl
+      = ("function" #(space+))? id_std "()"  allwhitespace* CodeBlock // "()"
+      | "function"  #(space+)   id_std "()"? allwhitespace* CodeBlock // "function"
 
   CodeBlock
       = "{" allwhitespace* CmdSequence allwhitespace* "}"
@@ -152,7 +157,7 @@ Bash {
       = keywordRoot ~alnum
 
   keywordRoot
-      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do"
+      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do" | "function"
 
   stringLiteral
       = singleString
