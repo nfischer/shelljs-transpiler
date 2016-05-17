@@ -9,7 +9,8 @@ Bash {
       | ("" ~keyword)
 
   NoSemicolonCmd
-      = IfCommand
+      = CodeBlock
+      | IfCommand
       | comment
       | ForCommand
       | WhileCommand
@@ -48,6 +49,9 @@ Bash {
       = "while" #(allwhitespace+) Conditional semicolon "do" #(allwhitespace+) CmdSequence Done
 
   Done = semicolon "done"
+
+  CodeBlock
+      = "{" allwhitespace* CmdSequence allwhitespace* "}"
 
   BinaryOp (Binary infix operator)
       = "=="  | "=" | "-eq"
@@ -165,7 +169,7 @@ Bash {
       = (~("\"" | "\\") (reference | any))
       | "\\" any -- escape
 
-  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")" | "&"
+  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")" | "&" | "{" | "}"
   Export
       = "export " Assignment -- assign
       | "export " id -- bare

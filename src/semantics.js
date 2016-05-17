@@ -163,6 +163,12 @@ var source2sourceSemantics = {
   Conditional_cmd: function(sc) {
     return sc.toJS(0) + '.code === 0';
   },
+  CodeBlock: function(_b1, s1, commandSequence, _s2, _b2) {
+    var spaceIc = s1.interval.contents;
+    return ind(this.args.indent) + '{' +
+        (spaceIc && (spaceIc + ind(this.args.indent+1))) +
+        commandSequence.toJS(this.args.indent+1).replace(/ *$/, '') + '}';
+  },
   BinaryOp: function(op) {
     var opTable = {
       '=='  : '===',
