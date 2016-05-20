@@ -93,7 +93,7 @@ s.addOperation(
 
 function loadTranslatedText() {
   // Note: must keep `globalInclude` in global namespace for now
-  globalInclude = document.getElementById('checkbox1').checked
+  globalInclude.value = document.getElementById('checkbox1').checked
   var script = editor.getValue().trim() + '\n';
   var m = bash.match(script);
   errMessage = m.failed() ? m.message : null;

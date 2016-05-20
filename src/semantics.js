@@ -56,23 +56,25 @@ function ind(ind_count) {
 }
 
 function env(str) {
-  return (globalInclude ? '' : 'shell.') + 'env.' + str;
+  return (globalInclude.value ? '' : 'shell.') + 'env.' + str;
 }
 
 function envGuess(str) {
   if (str === '?')
-    return (globalInclude ? '' : 'shell.') + 'error()';
+    return (globalInclude.value ? '' : 'shell.') + 'error()';
   if (str === '#')
     return 'process.argv.length-1';
   else if (str.match(/^\d+$/))
     return 'process.argv[' + (JSON.parse(str)+1) + ']';
   else if (str === str.toUpperCase())
-    return (globalInclude ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
+    return (globalInclude.value ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
   else
     return str;
 }
 
-var globalInclude = true;
+var globalInclude = {
+  value: true
+};
 var globalEnvironment = {};
 var allFunctions = {};
 
@@ -163,7 +165,7 @@ var source2sourceSemantics = {
   },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
-    if (!globalInclude && ret.indexOf('test') > -1)
+    if (!globalInclude.value && ret.indexOf('test') > -1)
       ret = ret.replace('test(', 'shell.test(')
     return ret;
   },
@@ -209,7 +211,7 @@ var source2sourceSemantics = {
   Shebang: function(_a, _b, _c) {
     if (this.interval.contents)
       return "#!/usr/bin/env node\n" +
-          (globalInclude ? "require('shelljs/global');" : "var shell = require('shelljs');") +
+          (globalInclude.value ? "require('shelljs/global');" : "var shell = require('shelljs');") +
           "\n";
     else {
       return '';
@@ -230,7 +232,7 @@ var source2sourceSemantics = {
         redirects.toJS(this.args.indent).join('');
     if (ampersand.interval.contents)
       ret = ret.replace(')', ', {async: true})');
-    if (!globalInclude) ret = 'shell.' + ret;
+    if (!globalInclude.value) ret = 'shell.' + ret;
     return ret;
   },
   SimpleCmdBase: function(scb) { return scb.toJS(this.args.indent); },

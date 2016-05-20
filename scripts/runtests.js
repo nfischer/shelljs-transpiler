@@ -108,6 +108,19 @@ assert.equal(s(m).toJS(0), "while (test('-f', 'foo.txt')) {\n" +
                            "  echo('hi');\n" +
                            "}\n");
 
+// test non-global include
+semantics.globalInclude.value = false;
+m = bash.match("while [ -f foo.txt ]; do\n" +
+               "  echo hi\n" +
+               "  echo $?\n" +
+               "done\n");
+assert.ok(m.succeeded());
+assert.equal(s(m).toJS(0), "while (shell.test('-f', 'foo.txt')) {\n" +
+                           "  shell.echo('hi');\n" +
+                           "  shell.echo(shell.error());\n" +
+                           "}\n");
+semantics.globalInclude.value = true;
+
 // // Empty script
 // m = bash.match("\n");
 // assert.ok(m.succeeded());
