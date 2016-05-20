@@ -1,5 +1,4 @@
-shelljs-transpiler
-==================
+# shelljs-transpiler
 
 [![Build Status](https://travis-ci.org/nfischer/shelljs-transpiler.svg?branch=master)](https://travis-ci.org/nfischer/shelljs-transpiler)
 
@@ -20,74 +19,62 @@ Have a lot of scripts to transpile? Clone this repository to make use of the
 the [Building the project](#building-the-project) section below for installation
 steps.
 
-### Like the project?
+## Think this is cool?
 
-Feel free to [contribute](#contributing) or give it a star on Github.
+Let me know by giving it a star on Github.
 
-ShellJS compatibility
----------------------
+### Think this is really cool? :sunglasses:
 
-> What version of ShellJS is this compatible with? Can I run this code?
+Contributions would be awesome! I'd really like to propel this
+project forward, but don't have much time. You can help me out by:
 
-These are good questions... to which I have no good answer. I'm currently one of
-the maintainers of ShellJS, so I have a tendency to translate to "what ShellJS
-will soon become," instead of "what ShellJS currently is." The output here is
-designed to be compatible with what will hopefully be ShellJS v0.7+.  This is
-because v0.7 will have support for many more Bash features (pipes, globbing,
-return codes, etc.), which makes for more interesting translations. I openly
-admit that some of these translations are to features that I haven't actually
-written yet for ShellJS.
+ - sending me scripts you'd like to be able to translate, but haven't been able
+   to
+ - finding bugs
+ - helping [refactor the
+grammar](https://github.com/nfischer/shelljs-transpiler/issues/11)
+ - taking up one of the [help-wanted
+issues](https://github.com/nfischer/shelljs-transpiler/labels/help%20wanted)
+ - spreading the word (more awareness = more contributors)
 
-The downside is that there are no guarantees that a given translation will
-actually run on any current release of ShellJS. The upside is that as I develop
-this translator, it opens my eyes to which language features ShellJS is
-desperately lacking.
+## ShellJS compatibility
 
-If you want to try running a translation, the most recent release of ShellJS is
-your best bet. I'll keep `package.json` up to date with the latest version.
+> What version of ShellJS is this compatible with? Can I run this
+> code? Will this translate anything correctly?
 
-Getting Ohm to work in Node and the browser
--------------------------------------------
+These are good questions... to which I have no good answer.
+
+I'm currently helping maintain ShellJS. Whenever I see something
+that's easier to do in Bash than in ShellJS, I usually brainstorm a
+new syntax for how to put it in the package. Eventually, I even get
+around to implementing it upstream.
+
+This means I usually write this translator for "what I see ShellJS
+becoming" instead of what ShellJS currently is. This is mostly
+compatible with ShellJS v0.7+. If you'd like to try running a
+translation, the latest version of ShellJS is your best bet.
+
+## Getting Ohm to work in Node and the browser
 
 Check out [nfischer/ohm-builder](https://github.com/nfischer/ohm-builder) to see
 how I did it.
 
-Contributing
-------------
+## Contributing
 
-Want to contribute to this? Awesome! I'd love to receive any pull requests. Take
-a look at the [list of help-wanted
-issues](https://github.com/nfischer/shelljs-transpiler/labels/help%20wanted) if
-you're looking for a place to start, or feel free to think of your own ideas and
-work on those. Things that would make for good contributions would be:
-
- - Generalizing the Bash grammar (it's currently very specific to the task of
-   translating bash to ShellJS).
- - Making the grammar stricter (it will sometimes accept things that aren't
-   allowed in Bash for the sake of keeping code simple, but this should get
-   resolved).
- - Translating more stuff (adding support for things like functions, which
-   aren't supported yet).
- - Expanding the grammar itself (ex. adding support for things like env-vars
-   declared before a command of the form `LS_COLORS= ls foo/`). This doesn't
-   have to include features that necessarily translate well into ShellJS, since
-   I'm also interested in making a better Bash PEG.
-
-If you're going to be working on an issue, please either comment on the github
-issue (so I know you're tackling it), or post a new issue for the feature
-request (so I can provide input before you start implementing, to cut down on
-wasted time).
+As stated above, contributions are welcome! If you're interested in
+helping out, let me know by posting an issue or shooting me an
+email.
 
 Building the project
 --------------------
 
 This project uses `gulp` as its task-runner. It also depends on a git submodule
-and some npm packages, which can be installed via:
+and some npm packages. Install it all via:
 
 ```Bash
 $ git clone --recursive https://github.com/nfischer/shelljs-transpiler.git
 $ cd shelljs-transpiler/
 $ npm install -g gulp-cli
 $ npm install
-$ gulp # This compiles index.html from src/index.generator.html
+$ gulp # Compiles src/index.generator.html -> ./index.html
 ```
