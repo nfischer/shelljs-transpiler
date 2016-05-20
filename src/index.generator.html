@@ -35,12 +35,11 @@ body, h1, p {
 h2 {
   font-style: italic;
 }
-textarea {
-  overflow-x: scroll;
-  overflow-y: scroll;
-  float: left;
-  display: inline-block;
-  background: white;
+.CodeMirror {
+  text-align: left;
+  width: 50em;
+  border: solid;
+  border-color: lightgrey;
 }
 #checkbox1 {
   text-align: center;
@@ -64,10 +63,23 @@ button.selector {
 </style>
 <script src="lib/ohm/dist/ohm.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css">
 <script type="text/ohm-js" src="bash.ohm"></script>
 <script src="src/semantics.js"></script>
 <script src="src/hints.js"></script>
 <script>
+var editor;
+var jscode;
+$(document).ready(function(){
+  // code here
+  var code = $('.codemirror-textarea')[0];
+  editor = CodeMirror.fromTextArea(code, {
+    lineNumbers: true
+  });
+  var output = $('.codemirror-textarea')[1];
+  jscode = CodeMirror.fromTextArea(output, {readOnly: true, lineNumbers: true});
+});
 function selectAll(id) {
   document.getElementById(id).select();
 }
@@ -80,46 +92,21 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
+  // Note: must keep `globalInclude` in global namespace for now
   globalInclude = document.getElementById('checkbox1').checked
-  var script = document.getElementById('bashcode').value.trim() + '\n';
+  var script = editor.getValue().trim() + '\n';
   var m = bash.match(script);
   errMessage = m.failed() ? m.message : null;
   warned = false;
   if (!errMessage) {
     var n = s(m);
-    var replacementText = n.toJS(0);
-    document.getElementById('jscode').innerHTML = replacementText;
+    var replacementText = n.toJS(0).trimRight();
+    jscode.setValue(replacementText);
   }
-}
-
-/*
- * The drag-and-drop code is adapted from http://stackoverflow.com/a/12215040
- */
-function handleFileSelect(evt) {
-  evt.stopPropagation();
-  evt.preventDefault();
-
-  var files = evt.dataTransfer.files; // FileList object.
-  var reader = new FileReader();
-  reader.onload = function(event) {
-    document.getElementById('bashcode').value = event.target.result;
-    loadTranslatedText();
-  }
-  reader.readAsText(files[0],"UTF-8");
-}
-
-function handleDragOver(evt) {
-  evt.stopPropagation();
-  evt.preventDefault();
-  evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
 
 $('document').ready(function() {
-  // Setup the dnd listeners.
-  var dropZone = document.getElementById('bashcode');
-  dropZone.addEventListener('dragover', handleDragOver, false);
-  dropZone.addEventListener('drop', handleFileSelect, false);
-  $('#bashcode').keyup(loadTranslatedText);
+  editor.on('change', loadTranslatedText);
   $('#checkbox1').change(loadTranslatedText);
   var timeout;
   $('#bashcode').keypress(function() {
@@ -163,12 +150,12 @@ README</a>
 <td>
 <div class="code-box">
 <h2>Shell Input Code</h2>
-<textarea id="bashcode" autocomplete="off" autocorrect="off"
-autocapitalize="off" spellcheck="false" cols="80" rows="16" wrap="off">
+<textarea id="bashcode" class="codemirror-textarea">
 #!/bin/bash
-echo "Type something, paste in some code, or drag-and-drop a shell script"</textarea>
+echo "Type something, paste in some code, or drag-and-drop a shell script"
+</textarea>
 <div class="container">
-<input type="button" class="selector" value="Select this script" onclick="selectAll('bashcode')" id="button1">
+<input type="button" class="selector" value="Select this script" onclick="editor.execCommand('selectAll'); editor.focus()" id="button1">
 </div>
 </div>
 </td>
@@ -177,11 +164,10 @@ echo "Type something, paste in some code, or drag-and-drop a shell script"</text
 <td>
 <div class="code-box">
 <h2>Generated ShellJS Output</h2>
-<textarea id="jscode" autocomplete="off" autocorrect="off"
-autocapitalize="off" spellcheck="false" cols="80" rows="16" wrap="off" readonly="">
+<textarea id="jscode" class="codemirror-textarea">
 </textarea>
 <div class="container">
-<input type="button" class="selector" value="Select this script" onclick="selectAll('jscode')" id="button2">
+<input type="button" class="selector" value="Select this script" onclick="jscode.execCommand('selectAll'); jscode.focus()" id="button2">
 </div>
 </div>
 </td>
