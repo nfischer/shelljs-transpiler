@@ -230,6 +230,7 @@ var source2sourceSemantics = {
         redirects.toJS(this.args.indent).join('');
     if (ampersand.interval.contents)
       ret = ret.replace(')', ', {async: true})');
+    if (!globalInclude) ret = 'shell.' + ret;
     return ret;
   },
   SimpleCmdBase: function(scb) { return scb.toJS(this.args.indent); },
