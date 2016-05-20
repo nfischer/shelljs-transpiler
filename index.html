@@ -64,6 +64,8 @@ button.selector {
 <script src="lib/ohm/dist/ohm.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
+<script type="text/javascript" src="lib/codemirror/mode/shell/shell.js"></script>
+<script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
 <link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css">
 <script type="text/ohm-js">
 Bash {
@@ -269,10 +271,15 @@ $(document).ready(function(){
   // code here
   var code = $('.codemirror-textarea')[0];
   editor = CodeMirror.fromTextArea(code, {
+    mode: 'shell',
     lineNumbers: true
   });
   var output = $('.codemirror-textarea')[1];
-  jscode = CodeMirror.fromTextArea(output, {readOnly: true, lineNumbers: true});
+  jscode = CodeMirror.fromTextArea(output, {
+    readOnly: true,
+    mode: 'javascript',
+    lineNumbers: true
+  });
 });
 function selectAll(id) {
   document.getElementById(id).select();
