@@ -9,15 +9,13 @@
 Want to try out [ShellJS](https://github.com/shelljs/shelljs) but don't want to
 go through the effort of porting all your scripts? Look no further.
 
-Automagically transpile your Bash scripts to ShellJS. Try it out [here on the
-web](https://nfischer.github.io/shelljs-transpiler/), no downloads necessary.
-Just type, copy-paste, or drag-and-drop your favorite shell script and copy out
-the generated results.
+Easily transpile your Bash scripts to ShellJS. Try it out [here on the
+web](https://nfischer.github.io/shelljs-transpiler/). Just type, copy-paste, or
+drag-and-drop your favorite shell script and see the results.
 
-Have a lot of scripts to transpile? Clone this repository to make use of the
-`transpile.js` executable to programmatically transpile your scripts. Check out
-the [Building the project](#building-the-project) section below for installation
-steps.
+Have a lot of scripts to transpile? Download this package to use the
+`transpile.js` binary.  Check out the [Building the
+project](#building-the-project) section below for installation steps.
 
 ## Think this is cool?
 
@@ -30,11 +28,12 @@ project forward, but don't have much time. You can help me out by:
 
  - sending me scripts you'd like to be able to translate, but haven't been able
    to
- - finding bugs
- - helping [refactor the
-grammar](https://github.com/nfischer/shelljs-transpiler/issues/11)
+ - finding bugs or thinking of features
  - taking up one of the [help-wanted
 issues](https://github.com/nfischer/shelljs-transpiler/labels/help%20wanted)
+ - helping [refactor the
+grammar](https://github.com/nfischer/shelljs-transpiler/issues/11) so that other
+   people can use it too.
  - spreading the word (more awareness = more contributors)
 
 ## ShellJS compatibility
@@ -65,8 +64,7 @@ As stated above, contributions are welcome! If you're interested in
 helping out, let me know by posting an issue or shooting me an
 email.
 
-Building the project
---------------------
+## Building the project
 
 This project uses `gulp` as its task-runner. It also depends on a git submodule
 and some npm packages. Install it all via:
