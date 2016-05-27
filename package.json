@@ -13,6 +13,7 @@
   ],
   "main": "./bin/transpile.js",
   "scripts": {
+    "build": "ohm-builder.js src/index.generator.html index.html",
     "test": "node ./scripts/runtests.js",
     "deploy": "node ./scripts/deploy.js"
   },
