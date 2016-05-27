@@ -27,7 +27,7 @@
     "shjs": "./bin/shjs"
   },
   "devDependencies": {
-    "ohm-builder": "github:nfischer/ohm-builder",
+    "ohm-builder": "^0.3.0",
     "gulp": "^3.9.1"
   },
   "dependencies": {
