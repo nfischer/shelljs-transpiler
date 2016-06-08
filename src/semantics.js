@@ -147,17 +147,17 @@ var source2sourceSemantics = {
         ? "!(" + ret + ")"
         : ret;
   },
-  TestCmd_unaryBracket: function(_ob, negate, unop, bw, _cb) {
+  TestCmd_unaryBracket: function(_ob, _2, negate, unop, bw, _cb) {
     return negate.interval.contents +
         "test('" + unop.interval.contents + "', " + bw.toJS(0) +")";
   },
-  TestCmd_binaryBracket: function(_ob, negate, bw1, binop, bw2, _cb) {
+  TestCmd_binaryBracket: function(_ob, _2, negate, bw1, binop, bw2, _cb) {
     var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
     return negate.interval.contents
         ? "!(" + ret + ")"
         : ret;
   },
-  TestCmd_str: function(_ob, negate, bw, _cb) {
+  TestCmd_str: function(_ob, _2, negate, bw, _cb) {
     var ret = bw.toJS(this.args.indent);
     return negate.interval.contents
         ? "!(" + ret + ")"
