@@ -13,4 +13,4 @@ before_script:
 script:
   - npm test
   - gulp
-  - git diff --quiet # make sure no files have changed
+  - npm run after-travis "Make sure you regenerate HTML"
