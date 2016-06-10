@@ -168,16 +168,16 @@ Bash {
       | TestCmd_binaryBracket
       | TestCmd_str
   TestCmd_unaryBracket
-      = "[[" "!"? UnaryOp Bashword "]]"
-      | "[" "!"? UnaryOp Bashword "]"
+      = #("[[" space+) "!"? UnaryOp Bashword "]]"
+      | #("[" space+) "!"? UnaryOp Bashword "]"
   TestCmd_binaryBracket
-      = "[[" "!"? Bashword BinaryOp Bashword "]]"
-      | "[" "!"? Bashword BinaryOp Bashword "]"
+      = #("[[" space+) "!"? Bashword BinaryOp Bashword "]]"
+      | #("[" space+) "!"? Bashword BinaryOp Bashword "]"
   TestCmd_str
-      = "[[" "!"? Bashword "]]"
-      | "[" "!"? Bashword "]"
+      = #("[[" space+) "!"? Bashword "]]"
+      | #("[" space+) "!"? Bashword "]"
 
-  CmdName = (~keyword Bashword)
+  CmdName = (~keyword Bashword #(~alnum))
   comment = space* "#" (~"\n" any)*
   /* modOptions = ("-" |"+" ) letter+ */
 
