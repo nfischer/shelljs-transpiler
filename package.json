@@ -16,7 +16,7 @@
     "build": "ohm-builder.js src/index.generator.html index.html",
     "test": "node ./scripts/runtests.js",
     "after-travis": "travis-check-changes",
-    "deploy": "node ./scripts/deploy.js"
+    "deploy": "deploy-gh"
   },
   "author": "Nate Fischer <ntfschr@gmail.com>",
   "repository": {
@@ -28,6 +28,7 @@
     "shjs": "./bin/shjs"
   },
   "devDependencies": {
+    "deploy-gh": "^0.1.1",
     "gulp": "^3.9.1",
     "ohm-builder": "^0.3.0",
     "travis-check-changes": "^0.2.0"
