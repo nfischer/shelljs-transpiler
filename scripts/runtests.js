@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* globals cat, exec, set, config, cd, ls, error, echo, exit */
 
 'use strict';
 
@@ -131,31 +132,31 @@ semantics.globalInclude.value = true;
 m = bash.match("  # this is   a comment\n");
 assert.ok(m.succeeded());
 
-m = bash.match("exit\n")
+m = bash.match("exit\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "exit();\n");
 
-m = bash.match("exit  -43\n")
+m = bash.match("exit  -43\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "exit(-43);\n");
 
-m = bash.match("sed    's/foo/bar' file.txt\n")
+m = bash.match("sed    's/foo/bar' file.txt\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "sed(/foo/, 'bar', 'file.txt');\n");
 
-m = bash.match("sed    's/foo/bar/' file.txt\n")
+m = bash.match("sed    's/foo/bar/' file.txt\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "sed(/foo/, 'bar', 'file.txt');\n");
 
-m = bash.match("sed    's/foo/bar/g' file.txt\n")
+m = bash.match("sed    's/foo/bar/g' file.txt\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "sed(/foo/g, 'bar', 'file.txt');\n");
 
-m = bash.match("grep    'foo' file.txt\n")
+m = bash.match("grep    'foo' file.txt\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "grep('foo', 'file.txt');\n");
 
-m = bash.match("test -d file.txt\n")
+m = bash.match("test -d file.txt\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "test('-d', 'file.txt');\n");
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* globals cat, exit, exec */
 
 'use strict';
 
@@ -16,7 +17,7 @@ var bash = ohm.grammar(contents);
 // Load in script, ensure a trailing newline
 if (typeof argv.r === 'string')
   argv._.unshift(argv.r);
-var inputFile = argv._[0]
+var inputFile = argv._[0];
 if (!inputFile) {
   console.error('Usage: node transpile.js <input>');
   process.exit(1);
