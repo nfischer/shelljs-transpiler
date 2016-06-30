@@ -16,6 +16,7 @@
     "posttest": "npm run lint",
     "lint": "jshint .",
     "build": "ohm-builder.js src/index.generator.html index.html",
+    "build:watch": "watch 'npm run build' src",
     "test": "node ./scripts/runtests.js",
     "after-travis": "travis-check-changes",
     "deploy": "deploy-gh"
@@ -33,8 +34,9 @@
     "deploy-gh": "^0.1.1",
     "gulp": "^3.9.1",
     "jshint": "^2.9.2",
-    "ohm-builder": "^0.3.0",
-    "travis-check-changes": "^0.3.0"
+    "ohm-builder": "^0.4.0",
+    "travis-check-changes": "^0.3.0",
+    "watch": "^0.19.1"
   },
   "dependencies": {
     "minimist": "^1.2.0",

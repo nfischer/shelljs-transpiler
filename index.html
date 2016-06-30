@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!DOCTYPE html><html><head>
 <title>Bash to ShellJS Translator</title>
 <style>
 @font-face {
@@ -332,11 +330,9 @@ $('document').ready(function() {
 </head>
 <body>
 <h1>Bash to ShellJS Translator</h1>
-<blockquote
-cite="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">
+<blockquote cite="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">
 "Say goodbye to those gnarly Bash scripts!"
--- @arturadib, <a
-href="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">ShellJS
+-- @arturadib, <a href="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">ShellJS
 README</a>
 </blockquote>
 <p>Like it? Check out the project <a href="https://github.com/nfischer/shelljs-transpiler">on Github</a></p>
@@ -347,12 +343,11 @@ README</a>
 <p class="hint-text" id="hint-body"></p>
 </div>
 <table>
-<tr>
+<tbody><tr>
 <td>
 <div class="code-box">
 <h2>Shell Input Code</h2>
-<textarea id="bashcode" class="codemirror-textarea">
-#!/bin/bash
+<textarea id="bashcode" class="codemirror-textarea">#!/bin/bash
 echo "Type something, paste in some code, or drag-and-drop a shell script"
 </textarea>
 <div class="container">
@@ -365,14 +360,14 @@ echo "Type something, paste in some code, or drag-and-drop a shell script"
 <td>
 <div class="code-box">
 <h2>Generated ShellJS Output</h2>
-<textarea id="jscode" class="codemirror-textarea">
-</textarea>
+<textarea id="jscode" class="codemirror-textarea"></textarea>
 <div class="container">
 <input type="button" class="selector" value="Select this script" onclick="jscode.execCommand('selectAll'); jscode.focus()" id="button2">
 </div>
 </div>
 </td>
 </tr>
-</table>
-</body>
-</html>
+</tbody></table>
+
+
+</body></html>
