@@ -17,7 +17,7 @@
     "lint": "jshint .",
     "build": "ohm-builder.js src/index.generator.html index.html",
     "build:watch": "watch 'npm run build' src",
-    "test": "node ./scripts/runtests.js",
+    "test": "nyc --reporter=text --reporter=lcov node scripts/runtests.js",
     "after-travis": "travis-check-changes",
     "deploy": "deploy-gh"
   },
@@ -33,6 +33,7 @@
   "devDependencies": {
     "deploy-gh": "^0.1.1",
     "jshint": "^2.9.2",
+    "nyc": "^6.6.1",
     "ohm-builder": "^0.4.0",
     "travis-check-changes": "^0.3.0",
     "watch": "^0.19.1"
