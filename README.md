@@ -66,13 +66,17 @@ email.
 
 ## Building the project
 
-This project uses `gulp` as its task-runner. It also depends on a git submodule
-and some npm packages. Install it all via:
+First, install it (**and the git submodule dependencies!**)
 
 ```Bash
 $ git clone --recursive https://github.com/nfischer/shelljs-transpiler.git
 $ cd shelljs-transpiler/
-$ npm install -g gulp-cli
 $ npm install
-$ gulp # Compiles src/index.generator.html -> ./index.html
+```
+
+To compile the project after making changes, run:
+
+```bash
+$ npm run build       # run this to build index.html
+$ npm run build:watch # or, run this to rebuild after every save
 ```
