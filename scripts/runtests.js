@@ -240,7 +240,9 @@ cd(path.join(__dirname, '..', 'test'));
 ls().forEach(function (test) {
   cd(test);
   if (error())
+    /* istanbul ignore next */
     echo(test + 'is not a directory');
+  /* istanbul ignore next */
   try {
     m = bash.match(cat(ls('*.sh')[0]).toString());
     assert.ok(m.succeeded());
@@ -256,6 +258,7 @@ ls().forEach(function (test) {
 
 config.silent = false;
 
+/* istanbul ignore next */
 if (retStatus === 0)
   echo('All tests passed!');
 else
