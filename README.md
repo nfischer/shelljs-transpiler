@@ -1,7 +1,7 @@
 # shelljs-transpiler
 
 [![Travis](https://img.shields.io/travis/nfischer/shelljs-transpiler.svg?style=flat-square)](https://travis-ci.org/nfischer/shelljs-transpiler)
-[![Codecov](https://img.shields.io/codecov/c/github/codecov/example-python.svg?style=flat-square)](https://codecov.io/gh/nfischer/shelljs-transpiler)
+[![Codecov](https://img.shields.io/codecov/c/github/nfischer/shelljs-transpiler.svg?style=flat-square)](https://codecov.io/gh/nfischer/shelljs-transpiler)
 [![npm](https://img.shields.io/npm/v/shelljs-transpiler.svg?style=flat-square)](https://www.npmjs.com/package/shelljs-transpiler)
 
 > *"Say goodbye to those gnarly Bash scripts!"
