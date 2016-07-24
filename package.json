@@ -17,7 +17,6 @@
     "posttest": "npm run lint",
     "lint": "jshint .",
     "test": "nyc --reporter=text --reporter=lcov node scripts/runtests.js",
-    "after-travis": "travis-check-changes",
     "deploy": "deploy-gh"
   },
   "author": "Nate Fischer <ntfschr@gmail.com>",
@@ -34,7 +33,6 @@
     "http-server": "^0.9.0",
     "jshint": "^2.9.2",
     "nyc": "^6.6.1",
-    "travis-check-changes": "^0.3.0",
     "watch": "^0.19.1"
   },
   "dependencies": {
