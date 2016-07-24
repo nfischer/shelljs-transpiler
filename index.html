@@ -1,4 +1,6 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html>
+<head>
 <title>Bash to ShellJS Translator</title>
 <style>
 @font-face {
@@ -68,193 +70,7 @@ button.selector {
 <script type="text/javascript" src="lib/codemirror/mode/shell/shell.js"></script>
 <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
 <link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css">
-<script type="text/ohm-js">
-Bash {
-  Script
-      = (Shebang)? allwhitespace* CmdSequence? semicolon*
-  CmdSequence = NonemptyListOf<Cmd, semicolon>
-  Shebang = "#!" (~"sh" any)* "sh\n"
-
-  Cmd = FunctionDecl
-      | CodeBlock
-      | IfCommand
-      | comment
-      | ForCommand
-      | WhileCommand
-      | CmdWithComment
-      | PipeCmd
-      | Export
-      | Assignment
-      | SimpleCmd
-      | ("" ~keyword)
-
-  IfCommand
-      = IfCase ElseIfThen* ElseCase? EndIf
-
-  IfCase
-      = "if" #(allwhitespace+) Conditional semicolon "then" #(allwhitespace+) CmdSequence
-  ElseIfThen
-      = semicolon "elif" #(allwhitespace+) Conditional semicolon "then" #(allwhitespace+) CmdSequence
-  ElseCase
-      = semicolon "else" #(allwhitespace+) CmdSequence
-  EndIf = semicolon "fi"
-
-  Conditional
-      = TestCmd   -- test
-      | SimpleCmd -- cmd
-
-  ForCommand
-      = "for" "((" ControlStruct "))" semicolon "do" #(allwhitespace+) CmdSequence Done
-          -- c_style
-      | "for" id "in" (Call | arrayReference) semicolon "do" #(allwhitespace+) CmdSequence Done          -- for_each
-
-  ControlStruct
-      = Assignment ";" id BinaryOp Bashword ";" (~")" Bashword)
-
-  WhileCommand
-      = "while" #(allwhitespace+) Conditional semicolon "do" #(allwhitespace+) CmdSequence Done
-
-  Done = semicolon "done"
-
-  FunctionDecl
-      = ("function" #(space+))? id_std "()"  allwhitespace* CodeBlock // "()"
-      | "function"  #(space+)   id_std "()"? allwhitespace* CodeBlock // "function"
-
-  CodeBlock
-      = "{" allwhitespace* CmdSequence allwhitespace* "}"
-
-  BinaryOp (Binary infix operator)
-      = "=="  | "=" | "-eq"
-      | "!="  | "-ne"
-      | "-lt" | "\\<"
-      | "-gt" | "\\>"
-      | "-le"
-      | "-ge"
-
-  UnaryOp (Unary operator)
-      = "-z" | "-n" | "-b" | "-c" | "-d" | "-e" | "-f" | "-L" | "-p" | "-S"
-
-  SequenceCmd
-      = Cmd semicolon Cmd -- std
-      | Cmd semicolon -- null
-
-  PipeCmd = (PipeCmd | SimpleCmd) "|" allwhitespace* (PipeCmd | SimpleCmd)
-
-  CmdWithComment
-      = SimpleCmd comment
-
-  SimpleCmd
-      = SimpleCmdBase Redirect* "&"?
-
-  Redirect
-      = ">" Bashword
-      | ">>" Bashword
-
-  SimpleCmdBase
-      = TestCmd
-      | CmdName Bashword* -- std
-
-  TestCmd
-      = "test " "!"? UnaryOp Bashword               -- unary
-      | "test " "!"? Bashword BinaryOp Bashword     -- binary
-      | TestCmd_unaryBracket
-      | TestCmd_binaryBracket
-      | TestCmd_str
-  TestCmd_unaryBracket
-      = #("[[" space+) "!"? UnaryOp Bashword "]]"
-      | #("[" space+) "!"? UnaryOp Bashword "]"
-  TestCmd_binaryBracket
-      = #("[[" space+) "!"? Bashword BinaryOp Bashword "]]"
-      | #("[" space+) "!"? Bashword BinaryOp Bashword "]"
-  TestCmd_str
-      = #("[[" space+) "!"? Bashword "]]"
-      | #("[" space+) "!"? Bashword "]"
-
-  CmdName = (~keyword Bashword #(~alnum))
-  comment = space* "#" (~"\n" any)*
-  /* modOptions = ("-" |"+" ) letter+ */
-
-  Bashword
-      = Call
-      | ArrayLiteral
-      | arrayLength
-      | arrayReference
-      | stringLiteral
-      | number
-      | bareWord
-
-  ArrayLiteral
-      = "(" allwhitespace* (Bashword allwhitespace*)* ")"
-
-  Call
-      = "$(" Cmd ")"
-      | "\"$(" Cmd ")\""
-      | "`" Cmd "`"
-      | "\"`" Cmd "`\""
-
-  arrayReference
-      = "${" id "[@]}"
-      | "\"${" id "[@]}\""
-
-  arrayLength
-      = "${#" id "[@]}"
-
-  reference
-      = "$" id -- simple
-      | "${" id "}" -- wrapped
-      | "${" id ":" digit+ ":"? digit* "}" -- substr
-      | "${" id ("//" | "/") alnum* "/"? alnum* "}" -- substit
-      | "${#" id "}" -- length
-
-  number
-      = "-"? digit+
-
-  bareWord
-      = barewordChar+
-
-  barewordChar
-      = (~(badchars | "\\") (reference | any)) -- normal
-      | "\\" any -- escape
-
-  keyword
-      = keywordRoot ~alnum
-
-  keywordRoot
-      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do" | "function"
-
-  stringLiteral
-      = singleString
-      | doubleString
-
-  singleString = "'" notSingleQuote* "'"
-  doubleString = "\"" notDoubleQuote* "\""
-
-  notSingleQuote
-      = (~"'" any)
-      | "\\" any -- escape
-
-  notDoubleQuote
-      = (~("\"" | "\\") (reference | any))
-      | "\\" any -- escape
-
-  badchars = allwhitespace | "|" | ";" | ">" | "#" | "'" | "\"" | "`" | "(" | ")" | "&" | "{" | "}"
-  Export
-      = "export " Assignment -- assign
-      | "export " id -- bare
-  Assignment
-      = ("local " | "readonly ")? #(id_std "=" ~space) Bashword?
-
-  id  = (~keyword (letter | "_") (alnum | "_")*) -- std
-      | digit+ -- arg
-      | "?" -- error
-      | "#" -- argLength
-  space := " " | "\t"
-  allwhitespace = space | "\n"
-  semicolon
-      = ";"* "\n" -- both
-      | ";"+
-}
-</script>
+<script type="text/ohm-js" src="src/bash.ohm"></script>
 <script src="src/semantics.js"></script>
 <script src="src/hints.js"></script>
 <script>
@@ -325,9 +141,11 @@ $('document').ready(function() {
 </head>
 <body>
 <h1>Bash to ShellJS Translator</h1>
-<blockquote cite="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">
+<blockquote
+cite="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">
 "Say goodbye to those gnarly Bash scripts!"
--- @arturadib, <a href="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">ShellJS
+-- @arturadib, <a
+href="https://github.com/shelljs/shelljs#shelljs---unix-shell-commands-for-nodejs">ShellJS
 README</a>
 </blockquote>
 <p>Like it? Check out the project <a href="https://github.com/nfischer/shelljs-transpiler">on Github</a></p>
@@ -338,11 +156,12 @@ README</a>
 <p class="hint-text" id="hint-body"></p>
 </div>
 <table>
-<tbody><tr>
+<tr>
 <td>
 <div class="code-box">
 <h2>Shell Input Code</h2>
-<textarea id="bashcode" class="codemirror-textarea">#!/bin/bash
+<textarea id="bashcode" class="codemirror-textarea">
+#!/bin/bash
 echo "Type something, paste in some code, or drag-and-drop a shell script"
 </textarea>
 <div class="container">
@@ -355,14 +174,14 @@ echo "Type something, paste in some code, or drag-and-drop a shell script"
 <td>
 <div class="code-box">
 <h2>Generated ShellJS Output</h2>
-<textarea id="jscode" class="codemirror-textarea"></textarea>
+<textarea id="jscode" class="codemirror-textarea">
+</textarea>
 <div class="container">
 <input type="button" class="selector" value="Select this script" onclick="jscode.execCommand('selectAll'); jscode.focus()" id="button2">
 </div>
 </div>
 </td>
 </tr>
-</tbody></table>
-
-
-</body></html>
+</table>
+</body>
+</html>

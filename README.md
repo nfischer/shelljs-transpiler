@@ -55,18 +55,13 @@ becoming" instead of what ShellJS currently is. This is mostly
 compatible with ShellJS v0.7+. If you'd like to try running a
 translation, the latest version of ShellJS is your best bet.
 
-## Getting Ohm to work in Node and the browser
-
-Check out [nfischer/ohm-builder](https://github.com/nfischer/ohm-builder) to see
-how I did it.
-
 ## Contributing
 
 As stated above, contributions are welcome! If you're interested in
 helping out, let me know by posting an issue or shooting me an
 email.
 
-## Building the project
+## Running the project
 
 First, install it (**and the git submodule dependencies!**)
 
@@ -76,9 +71,5 @@ $ cd shelljs-transpiler/
 $ npm install
 ```
 
-To compile the project after making changes, run:
-
-```bash
-$ npm run build       # run this to build index.html
-$ npm run build:watch # or, run this to rebuild after every save
-```
+Next, run it in the browser (usually on http://127.0.0.1:8080/) using `npm
+start`
