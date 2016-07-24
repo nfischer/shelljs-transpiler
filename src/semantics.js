@@ -78,13 +78,20 @@ var globalInclude = {
 var globalEnvironment = {};
 var allFunctions = {};
 
+// Don't append a semicolon after transpiling these commands
+var semicolonCmdNames = [
+  'PipeCmd',
+  'Export',
+  'Assignment',
+  'SimpleCmd'
+];
+
 var source2sourceSemantics = {
   Cmd: function(e) {
-    return this.interval.contents && e.toJS(this.args.indent);
-  },
-  SemicolonCmd: function(c) { return c.toJS(this.args.indent) + ';'; },
-  NoSemicolonCmd: function(c) {
-    return c.toJS(this.args.indent);
+    return (
+      this.interval.contents && e.toJS(this.args.indent) +
+      (semicolonCmdNames.includes(e.ctorName) ? ';' : '')
+    );
   },
   IfCommand: function(ic, eit, elc, ef) {
     return ic.toJS(this.args.indent) +
@@ -143,9 +150,9 @@ var source2sourceSemantics = {
   },
   TestCmd_binary: function(_, negate, bw1, binop, bw2) {
     var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
-    return negate.interval.contents
-        ? "!(" + ret + ")"
-        : ret;
+    return negate.interval.contents ?
+        "!(" + ret + ")" :
+        ret;
   },
   TestCmd_unaryBracket: function(_ob, _2, negate, unop, bw, _cb) {
     return negate.interval.contents +
@@ -153,20 +160,20 @@ var source2sourceSemantics = {
   },
   TestCmd_binaryBracket: function(_ob, _2, negate, bw1, binop, bw2, _cb) {
     var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
-    return negate.interval.contents
-        ? "!(" + ret + ")"
-        : ret;
+    return negate.interval.contents ?
+        "!(" + ret + ")" :
+        ret;
   },
   TestCmd_str: function(_ob, _2, negate, bw, _cb) {
     var ret = bw.toJS(this.args.indent);
-    return negate.interval.contents
-        ? "!(" + ret + ")"
-        : ret;
+    return negate.interval.contents ?
+        "!(" + ret + ")" :
+        ret;
   },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
     if (!globalInclude.value && ret.indexOf('test') > -1)
-      ret = ret.replace('test(', 'shell.test(')
+      ret = ret.replace('test(', 'shell.test(');
     return ret;
   },
   Conditional_cmd: function(sc) {
@@ -202,9 +209,9 @@ var source2sourceSemantics = {
     globalEnvironment = {};
     allFunctions = {};
 
-    return (this.interval.contents.match(/^(\s)*$/)
-          ? ''
-          : shebang.toJS(this.args.indent) +
+    return (this.interval.contents.match(/^(\s)*$/) ?
+          '' :
+          shebang.toJS(this.args.indent) +
         space.interval.contents +
         cmds.toJS(this.args.indent));
   },
@@ -309,9 +316,9 @@ var source2sourceSemantics = {
         ')';
   },
   reference_substit: function(_ob, id, _sl1, pat, _sl2, sub, _cb) {
-    var patStr = _sl1.interval.contents === "//"
-        ? new RegExp(pat.interval.contents, 'g').toString()
-        : JSON.stringify(pat.interval.contents);
+    var patStr = _sl1.interval.contents === "//" ?
+        new RegExp(pat.interval.contents, 'g').toString() :
+        JSON.stringify(pat.interval.contents);
     return '$$' + id.toJS(0) + '.replace(' +
         patStr + ', ' +
         JSON.stringify((sub.interval.contents) || '') + ')';
@@ -394,7 +401,7 @@ var source2sourceSemantics = {
     assign_str = assign.toJS(0).replace(/^(var|const) /, '');
     var id = assign_str.match(/^([^ ]+) =/)[1];
     return (id.match(/env\./) ? '' : env(id) + ' = ') +
-        assign_str
+        assign_str;
   },
   Assignment: function(varType, name, _eq, expr) {
     // Check if this variable is assigned already. If not, stick it in the

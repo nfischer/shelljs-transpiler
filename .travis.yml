@@ -7,10 +7,12 @@ sudo: false
 os: linux
 
 before_script:
-  - npm install -g gulp-cli
   - npm install
 
 script:
   - npm test
-  - gulp
+  - npm run build
   - npm run after-travis "Make sure you regenerate HTML"
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

@@ -1,6 +1,8 @@
 # shelljs-transpiler
 
-[![Build Status](https://travis-ci.org/nfischer/shelljs-transpiler.svg?branch=master)](https://travis-ci.org/nfischer/shelljs-transpiler)
+[![Travis](https://img.shields.io/travis/nfischer/shelljs-transpiler.svg?style=flat-square)](https://travis-ci.org/nfischer/shelljs-transpiler)
+[![Codecov](https://img.shields.io/codecov/c/github/nfischer/shelljs-transpiler.svg?style=flat-square)](https://codecov.io/gh/nfischer/shelljs-transpiler)
+[![npm](https://img.shields.io/npm/v/shelljs-transpiler.svg?style=flat-square)](https://www.npmjs.com/package/shelljs-transpiler)
 
 > *"Say goodbye to those gnarly Bash scripts!"
 > -- @arturadib, [ShellJS
@@ -53,26 +55,21 @@ becoming" instead of what ShellJS currently is. This is mostly
 compatible with ShellJS v0.7+. If you'd like to try running a
 translation, the latest version of ShellJS is your best bet.
 
-## Getting Ohm to work in Node and the browser
-
-Check out [nfischer/ohm-builder](https://github.com/nfischer/ohm-builder) to see
-how I did it.
-
 ## Contributing
 
 As stated above, contributions are welcome! If you're interested in
 helping out, let me know by posting an issue or shooting me an
 email.
 
-## Building the project
+## Running the project
 
-This project uses `gulp` as its task-runner. It also depends on a git submodule
-and some npm packages. Install it all via:
+First, install it (**and the git submodule dependencies!**)
 
 ```Bash
 $ git clone --recursive https://github.com/nfischer/shelljs-transpiler.git
 $ cd shelljs-transpiler/
-$ npm install -g gulp-cli
 $ npm install
-$ gulp # Compiles src/index.generator.html -> ./index.html
 ```
+
+Next, run it in the browser (usually on http://127.0.0.1:8080/) using `npm
+start`
