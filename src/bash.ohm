@@ -4,24 +4,18 @@ Bash {
   CmdSequence = NonemptyListOf<Cmd, semicolon>
   Shebang = "#!" (~"sh" any)* "sh\n"
 
-  Cmd = NoSemicolonCmd
-      | SemicolonCmd
-      | ("" ~keyword)
-
-  NoSemicolonCmd
-      = FunctionDecl
+  Cmd = FunctionDecl
       | CodeBlock
       | IfCommand
       | comment
       | ForCommand
       | WhileCommand
       | CmdWithComment
-
-  SemicolonCmd
-      = PipeCmd
+      | PipeCmd
       | Export
       | Assignment
       | SimpleCmd
+      | ("" ~keyword)
 
   IfCommand
       = IfCase ElseIfThen* ElseCase? EndIf
@@ -70,9 +64,7 @@ Bash {
       = "-z" | "-n" | "-b" | "-c" | "-d" | "-e" | "-f" | "-L" | "-p" | "-S"
 
   SequenceCmd
-      = NoSemicolonCmd semicolon Cmd -- nosemicolon
-      | Cmd semicolon Cmd -- std
-      | NoSemicolonCmd semicolon -- noscNull
+      = Cmd semicolon Cmd -- std
       | Cmd semicolon -- null
 
   PipeCmd = (PipeCmd | SimpleCmd) "|" allwhitespace* (PipeCmd | SimpleCmd)

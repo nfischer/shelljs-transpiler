@@ -78,13 +78,20 @@ var globalInclude = {
 var globalEnvironment = {};
 var allFunctions = {};
 
+// Don't append a semicolon after transpiling these commands
+var semicolonCmdNames = [
+  'PipeCmd',
+  'Export',
+  'Assignment',
+  'SimpleCmd'
+];
+
 var source2sourceSemantics = {
   Cmd: function(e) {
-    return this.interval.contents && e.toJS(this.args.indent);
-  },
-  SemicolonCmd: function(c) { return c.toJS(this.args.indent) + ';'; },
-  NoSemicolonCmd: function(c) {
-    return c.toJS(this.args.indent);
+    return (
+      this.interval.contents && e.toJS(this.args.indent) +
+      (semicolonCmdNames.includes(e.ctorName) ? ';' : '')
+    );
   },
   IfCommand: function(ic, eit, elc, ef) {
     return ic.toJS(this.args.indent) +
