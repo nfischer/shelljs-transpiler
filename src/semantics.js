@@ -90,7 +90,7 @@ var source2sourceSemantics = {
   Cmd: function(e) {
     return (
       this.interval.contents && e.toJS(this.args.indent) +
-      (semicolonCmdNames.includes(e.ctorName) ? ';' : '')
+      (semicolonCmdNames.indexOf(e.ctorName) > -1 ? ';' : '')
     );
   },
   IfCommand: function(ic, eit, elc, ef) {
