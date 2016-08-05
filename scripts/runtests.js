@@ -16,7 +16,7 @@ config.silent = true;
 
 var contents = fs.readFileSync(ohmFile);
 var bash = ohm.grammar(contents);
-var s = bash.semantics();
+var s = bash.createSemantics();
 s.addOperation(
   'toJS(indent)',
   semantics.source2sourceSemantics);
