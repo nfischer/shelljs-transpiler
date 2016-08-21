@@ -1,6 +1,6 @@
 {
   "name": "shelljs-transpiler",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Translate bash to shelljs",
   "keywords": [
     "shelljs",
@@ -13,11 +13,14 @@
   ],
   "main": "./bin/transpile.js",
   "scripts": {
-    "start": "http-server",
+    "start": "http-server -o",
     "posttest": "npm run lint",
     "lint": "jshint .",
     "test": "nyc --reporter=text --reporter=lcov node scripts/runtests.js",
-    "deploy": "deploy-gh"
+    "deploy": "deploy-gh",
+    "release:major": "shelljs-release major",
+    "release:minor": "shelljs-release minor",
+    "release:patch": "shelljs-release patch"
   },
   "author": "Nate Fischer <ntfschr@gmail.com>",
   "repository": {
@@ -26,14 +29,21 @@
   },
   "license": "MIT",
   "bin": {
-    "shjs": "./bin/shjs"
+    "sh2js": "./bin/sh2js"
   },
+  "files": [
+    "src",
+    "bin",
+    "lib",
+    "index.html",
+    "fonts"
+  ],
   "devDependencies": {
     "deploy-gh": "^0.1.1",
     "http-server": "^0.9.0",
     "jshint": "^2.9.2",
     "nyc": "^6.6.1",
-    "watch": "^0.19.1"
+    "shelljs-release": "^0.2.0"
   },
   "dependencies": {
     "minimist": "^1.2.0",

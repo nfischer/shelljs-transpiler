@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* globals cat, exit, exec */
+/* globals cat, exit, exec, ShellString */
 
 'use strict';
 
@@ -8,6 +8,7 @@ var fs = require('fs');
 var path = require('path');
 var semantics = require('../src/semantics');
 require('shelljs/global');
+var myPackage = require('../package.json');
 
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -19,29 +20,29 @@ if (typeof argv.r === 'string')
   argv._.unshift(argv.r);
 var inputFile = argv._[0];
 if (!inputFile) {
-  console.error('Usage: node transpile.js <input>');
+  console.error('Usage: ' + path.basename(__filename) + ' <shell script input> [javascript file]');
   process.exit(1);
 }
 var script = cat(inputFile).trim() + '\n';
 
 var m = bash.match(script);
 if (m.failed()) {
-  console.error('Invalid script');
+  console.error('Unable to parse script');
+  console.error(m.message);
+  console.error('Please include this output in a bug report to ' + myPackage.repository.url);
   exit(1);
 }
 
-var s = bash.semantics();
+var s = bash.createSemantics();
 s.addOperation(
   'toJS(indent)',
   semantics.source2sourceSemantics);
 
 var n = s(m);
 
-var shellOutput = n.toJS(0);
-if (argv.r) { // run it!
-  exec('node -e ' + JSON.stringify(shellOutput
-      .replace(/#!.*\n/, '')
-      .replace(/\n/g, '')));
-} else {
-  process.stdout.write(shellOutput);
+var jsResult = n.toJS(0);
+if (argv._[1]) { // write it out to a file
+  ShellString(jsResult).to(argv._[1]);
+} else { // write it to stdout
+  process.stdout.write(jsResult);
 }

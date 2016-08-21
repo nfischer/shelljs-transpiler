@@ -1,5 +1,6 @@
+#!/bin/bash
 # code block
-{ls}
+{ ls; }
 {
 
   pwd
@@ -8,11 +9,12 @@
 # function declarations
 foo(){
   echo 'hi'
+  echo "$1"
 }
 function bar
 {
-  cat file.txt
+  cat file2.txt
 }
 function baz (){ ls; }
 # function calls
-foo 'hi'
+foo 'there'

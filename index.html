@@ -94,7 +94,7 @@ function selectAll(id) {
   document.getElementById(id).select();
 }
 var bash = ohm.grammarFromScriptElement();
-var s = bash.semantics();
+var s = bash.createSemantics();
 var errMessage;
 var warned = false;
 s.addOperation(
