@@ -15,9 +15,8 @@ Easily transpile your Bash scripts to ShellJS. Try it out [here on the
 web](https://nfischer.github.io/shelljs-transpiler/). Just type, copy-paste, or
 drag-and-drop your favorite shell script and see the results.
 
-Have a lot of scripts to transpile? Download this package to use the
-`transpile.js` binary.  Check out the [Building the
-project](#building-the-project) section below for installation steps.
+Have a lot of scripts to transpile? Install this globally to use `sh2js` to
+transpile scripts from the command line.
 
 ## Think this is cool?
 
@@ -38,6 +37,12 @@ grammar](https://github.com/nfischer/shelljs-transpiler/issues/11) so that other
    people can use it too.
  - spreading the word (more awareness = more contributors)
 
+## Installation
+
+```
+$ npm install -g shelljs-transpiler # this lets you use `sh2js`
+```
+
 ## ShellJS compatibility
 
 > What version of ShellJS is this compatible with? Can I run this
@@ -54,6 +59,15 @@ This means I usually write this translator for "what I see ShellJS
 becoming" instead of what ShellJS currently is. This is mostly
 compatible with ShellJS v0.7+. If you'd like to try running a
 translation, the latest version of ShellJS is your best bet.
+
+## `sh2js` CLI tool
+
+The `sh2js` CLI transpiler is still somewhat experimental, but feel free to
+check it out! Usage:
+
+```
+$ sh2js <shell script input> [JavaScript output]
+```
 
 ## Contributing
 
