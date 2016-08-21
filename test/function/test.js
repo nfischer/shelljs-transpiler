@@ -1,5 +1,8 @@
+#!/usr/bin/env node
+require('shelljs/global');
 // code block
-{ls();}
+{ls();
+}
 {
 
   pwd();
@@ -8,11 +11,12 @@
 // function declarations
 function foo(..._$args) {
   echo('hi');
+  echo(_$args[0]);
 }
 function bar(..._$args) {
-  cat('file.txt');
+  cat('file2.txt');
 }
 function baz(..._$args) {ls();
 }
 // function calls
-foo('hi');
+foo('there');

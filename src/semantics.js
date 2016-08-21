@@ -59,13 +59,17 @@ function env(str) {
   return (globalInclude.value ? '' : 'shell.') + 'env.' + str;
 }
 
+function arrayName() {
+  return inFunctionBody ? '_$args' : 'process.argv';
+}
+
 function envGuess(str) {
   if (str === '?')
     return (globalInclude.value ? '' : 'shell.') + 'error()';
   if (str === '#')
-    return 'process.argv.length-1';
+    return arrayName() + '.length-1';
   else if (str.match(/^\d+$/))
-    return 'process.argv[' + (JSON.parse(str)+1) + ']';
+    return arrayName() + '[' + (JSON.parse(str)+(inFunctionBody ? -1 : 1)) + ']';
   else if (str === str.toUpperCase())
     return (globalInclude.value ? '' : 'shell.') + 'env.' + str; // assume it's an environmental variable
   else
@@ -75,6 +79,7 @@ function envGuess(str) {
 var globalInclude = {
   value: true
 };
+var inFunctionBody = false;
 var globalEnvironment = {};
 var allFunctions = {};
 
@@ -141,8 +146,12 @@ var source2sourceSemantics = {
   FunctionDecl: function(_fun, _sp1, id, _paren, _sp2, block) {
     var idStr = id.toJS(0);
     allFunctions[idStr] = true;
-    return 'function ' + idStr + '(..._$args) ' +
-        block.toJS(this.args.indent);
+
+    inFunctionBody = true;
+    var blockString = block.toJS(this.args.indent);
+    inFunctionBody = false;
+
+    return 'function ' + idStr + '(..._$args) ' + blockString;
   },
   TestCmd_unary: function(_, negate, unop, bw) {
     return negate.sourceString +
@@ -408,7 +417,7 @@ var source2sourceSemantics = {
     // environment
     var ret;
     var varName = name.toJS(0).trim();
-    if (varName.match(/^(shell.)?env.|^process.argv./) || globalEnvironment[varName]) {
+    if (varName.match(/^(shell.)?env.|^process.argv.|^_\$args./) || globalEnvironment[varName]) {
       ret = '';
     } else {
       ret = varType.sourceString.indexOf('readonly') > -1 ? 'const ' : 'var ';
