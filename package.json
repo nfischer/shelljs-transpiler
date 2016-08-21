@@ -13,7 +13,7 @@
   ],
   "main": "./bin/transpile.js",
   "scripts": {
-    "start": "opener http://127.0.0.1:8080 && http-server",
+    "start": "http-server -o",
     "posttest": "npm run lint",
     "lint": "jshint .",
     "test": "nyc --reporter=text --reporter=lcov node scripts/runtests.js",
@@ -32,9 +32,7 @@
     "deploy-gh": "^0.1.1",
     "http-server": "^0.9.0",
     "jshint": "^2.9.2",
-    "nyc": "^6.6.1",
-    "opener": "^1.4.1",
-    "watch": "^0.19.1"
+    "nyc": "^6.6.1"
   },
   "dependencies": {
     "minimist": "^1.2.0",
