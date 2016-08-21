@@ -17,7 +17,10 @@
     "posttest": "npm run lint",
     "lint": "jshint .",
     "test": "nyc --reporter=text --reporter=lcov node scripts/runtests.js",
-    "deploy": "deploy-gh"
+    "deploy": "deploy-gh",
+    "release:major": "shelljs-release major",
+    "release:minor": "shelljs-release minor",
+    "release:patch": "shelljs-release patch"
   },
   "author": "Nate Fischer <ntfschr@gmail.com>",
   "repository": {
