@@ -46,8 +46,8 @@ Bash {
   Done = semicolon "done"
 
   FunctionDecl
-      = ("function" #(space+))? id_std "()"  allwhitespace* CodeBlock // "()"
-      | "function"  #(space+)   id_std "()"? allwhitespace* CodeBlock // "function"
+      = ("function" #(space+))? id_std "()"  allwhitespace* CodeBlock // "foo()"
+      | "function"  #(space+)   id_std "()"? allwhitespace* CodeBlock // "function foo"
 
   CodeBlock
       = "{" allwhitespace* CmdSequence allwhitespace* "}"
@@ -108,7 +108,6 @@ Bash {
       | ArrayLiteral
       | arrayLength
       | arrayReference
-      | stringLiteral
       | number
       | bareWord
 
@@ -142,7 +141,8 @@ Bash {
       = barewordChar+
 
   barewordChar
-      = (~(badchars | "\\") (reference | any)) -- normal
+      = stringLiteral -- str
+      | (~(badchars | "\\") (reference | any)) -- normal
       | "\\" any -- escape
 
   keyword

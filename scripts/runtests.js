@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* globals cat, exec, set, config, cd, ls, error, echo, exit */
+/* globals cat, set, config, cd, ls, error, echo, exit */
 
 'use strict';
 
@@ -10,6 +10,7 @@ var path = require('path');
 var semantics = require('../src/semantics');
 require('shelljs/global');
 var ohmFile = path.join(__dirname, '..', 'src', 'bash.ohm');
+require('colors');
 
 set('-e');
 config.silent = true;
@@ -17,9 +18,7 @@ config.silent = true;
 var contents = fs.readFileSync(ohmFile);
 var bash = ohm.grammar(contents);
 var s = bash.createSemantics();
-s.addOperation(
-  'toJS(indent)',
-  semantics.source2sourceSemantics);
+s.addOperation('toJS(indent)', semantics.source2sourceSemantics);
 
 var m;
 
@@ -237,6 +236,10 @@ assert.equal(s(m).toJS(0), "echo('hi')\n  .cat()\n  .cat();\n");
 set('+e');
 var retStatus = 0;
 cd(path.join(__dirname, '..', 'test'));
+
+var greenCheckmark = '\u2713'.green.bold;
+var redX = '\u2717'.red.bold;
+
 ls().forEach(function (test) {
   cd(test);
   if (error())
@@ -245,11 +248,17 @@ ls().forEach(function (test) {
   /* istanbul ignore next */
   try {
     m = bash.match(cat(ls('*.sh')[0]).toString());
-    assert.ok(m.succeeded());
-    assert.equal(s(m).toJS(0), cat(ls('*.js')[0]));
+    if (m.failed()) {
+      console.error('Unable to parse ' + test);
+      throw new Error('Unable to parse');
+    } else {
+      assert.ok(m.succeeded());
+      assert.equal(s(m).toJS(0), cat(ls('*.js')[0]));
+    }
+    console.log(greenCheckmark + ' ' + test);
   } catch (e) {
     retStatus = 1;
-    echo('test ' + JSON.stringify(test) + ' failed');
+    console.log(redX + ' ' + test);
     echo('actual:   ' + JSON.stringify(e.actual));
     echo('expected: ' + JSON.stringify(e.expected));
   }

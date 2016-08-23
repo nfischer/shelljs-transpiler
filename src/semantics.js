@@ -340,6 +340,9 @@ var source2sourceSemantics = {
     return ("'" + chars.toJS(0).join('') + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
   },
   barewordChar: function(ch) { return ch.toJS(0); },
+  barewordChar_str: function(mystring) {
+    return "' + " + mystring.toJS(0) + " + '";
+  },
   barewordChar_normal: function(atom) {
     atom = atom.toJS(0);
     if (atom.substr(0, 2) === '$$') { // a hack
