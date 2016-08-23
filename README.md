@@ -39,26 +39,28 @@ grammar](https://github.com/nfischer/shelljs-transpiler/issues/11) so that other
 
 ## Installation
 
+**Note:** this may not handle all Bash syntax until v1.0. If your script doesn't
+get translated successfully, please file a Github issue.
+
 ```
 $ npm install -g shelljs-transpiler # this lets you use `sh2js`
 ```
 
-## ShellJS compatibility
+## ShellJS and NodeJS compatibility
 
-> What version of ShellJS is this compatible with? Can I run this
-> code? Will this translate anything correctly?
+*What version of ShellJS is this compatible with? Can I run this code? Do I need
+a special version of Node? Will this translate anything correctly?*
 
-These are good questions... to which I have no good answer.
+Your best bet are the latest versions of NodeJS and ShellJS. Some translations
+are significantly easier to do using ES6 features, so I use them where
+convenient. Also, ShellJS is still under development, so we're always adding new
+features to help give it the best of both JavaScript and Bash.
 
-I'm currently helping maintain ShellJS. Whenever I see something
-that's easier to do in Bash than in ShellJS, I usually brainstorm a
-new syntax for how to put it in the package. Eventually, I even get
-around to implementing it upstream.
-
-This means I usually write this translator for "what I see ShellJS
-becoming" instead of what ShellJS currently is. This is mostly
-compatible with ShellJS v0.7+. If you'd like to try running a
-translation, the latest version of ShellJS is your best bet.
+I'll sometimes write translations that take advantage of my not-yet-implemented
+ShellJS feature ideas--some of which may never get implemented. If your
+translated script relies on a feature that doesn't exist yet in ShellJS, let me
+know and I'll fix the transpiler to use a ShellJS feature that's available here
+and now.
 
 ## `sh2js` CLI tool
 
@@ -67,6 +69,13 @@ check it out! Usage:
 
 ```
 $ sh2js <shell script input> [JavaScript output]
+```
+
+Ex. usage:
+
+```bash
+$ sh2js testFile.sh outputFile.js # overwrites outputFile.js
+$ sh2js testFile.sh # writes to stdout
 ```
 
 ## Contributing
@@ -85,4 +94,5 @@ $ cd shelljs-transpiler/
 $ npm install
 ```
 
-Next, run it in the browser using `npm start`
+Next, run it in the browser using `npm start`, run unit tests using `npm test`,
+or try a script with `path/to/shelljs-transpiler/bin/sh2js someScript.sh`.
