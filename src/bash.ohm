@@ -84,20 +84,14 @@ Bash {
       | CmdName Bashword* -- std
 
   TestCmd
-      = "test " "!"? UnaryOp Bashword               -- unary
-      | "test " "!"? Bashword BinaryOp Bashword     -- binary
-      | TestCmd_unaryBracket
-      | TestCmd_binaryBracket
-      | TestCmd_str
-  TestCmd_unaryBracket
-      = #("[[" space+) "!"? UnaryOp Bashword "]]"
-      | #("[" space+) "!"? UnaryOp Bashword "]"
-  TestCmd_binaryBracket
-      = #("[[" space+) "!"? Bashword BinaryOp Bashword "]]"
-      | #("[" space+) "!"? Bashword BinaryOp Bashword "]"
-  TestCmd_str
-      = #("[[" space+) "!"? Bashword "]]"
-      | #("[" space+) "!"? Bashword "]"
+      = "test " TestInsides                 -- cmd
+      | #("[[" space+) TestInsides "]]"     -- doubleBracket
+      | #("[" space+) TestInsides "]"       -- singleBracket
+
+  TestInsides
+      = "!"? UnaryOp Bashword               -- unary
+      | "!"? Bashword BinaryOp Bashword     -- binary
+      | "!"? Bashword                       -- str
 
   CmdName = (~keyword Bashword #(~alnum))
   comment = space* "#" (~"\n" any)*

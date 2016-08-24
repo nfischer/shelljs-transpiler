@@ -9,6 +9,34 @@ var reservedWords = [
   'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield',
 ];
 
+function testCmdHelper(negate, word1, operator, word2) {
+  if (word1) {
+    // binary command
+    var ret = word1.toJS(0) + ' ' + operator.toJS(0) + ' ' + word2.toJS(0);
+    return negate.sourceString ?
+        '!(' + ret + ')' :
+        ret;
+  } else {
+    // unary command
+    var opString = operator.sourceString || operator;
+    var negated = Boolean(negate.sourceString);
+
+    if (opString === '-n') {
+      opString = '-z';
+      negated = !negated;
+    }
+
+    if (opString === '-z') {
+      return negated ?
+        word2.toJS(0) :
+        '!(' + word2.toJS(0) + ')';
+    } else {
+      return (negated ? '!' : '' ) +
+          "test('" + opString + "', " + word2.toJS(0) +")";
+    }
+  }
+}
+
 function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.sourceString)
@@ -153,31 +181,23 @@ var source2sourceSemantics = {
 
     return 'function ' + idStr + '(..._$args) ' + blockString;
   },
-  TestCmd_unary: function(_, negate, unop, bw) {
-    return negate.sourceString +
-        "test('" + unop.sourceString + "', " + bw.toJS(0) +")";
+  TestCmd_cmd: function(_, insides) {
+    return insides.toJS(0);
   },
-  TestCmd_binary: function(_, negate, bw1, binop, bw2) {
-    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
-    return negate.sourceString ?
-        "!(" + ret + ")" :
-        ret;
+  TestCmd_singleBracket: function(_ob, _spaces, insides, _cb) {
+    return insides.toJS(0);
   },
-  TestCmd_unaryBracket: function(_ob, _2, negate, unop, bw, _cb) {
-    return negate.sourceString +
-        "test('" + unop.sourceString + "', " + bw.toJS(0) +")";
+  TestCmd_doubleBracket: function(_ob, _spaces, insides, _cb) {
+    return insides.toJS(0);
   },
-  TestCmd_binaryBracket: function(_ob, _2, negate, bw1, binop, bw2, _cb) {
-    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
-    return negate.sourceString ?
-        "!(" + ret + ")" :
-        ret;
+  TestInsides_unary: function(negate, binop, bw) {
+    return testCmdHelper(negate, null, binop, bw);
   },
-  TestCmd_str: function(_ob, _2, negate, bw, _cb) {
-    var ret = bw.toJS(this.args.indent);
-    return negate.sourceString ?
-        "!(" + ret + ")" :
-        ret;
+  TestInsides_binary: function(negate, bw1, binop, bw2) {
+    return testCmdHelper(negate, bw1, binop, bw2);
+  },
+  TestInsides_str: function(negate, bw) {
+    return testCmdHelper(negate, null, '-n', bw);
   },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
