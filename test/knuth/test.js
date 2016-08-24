@@ -4,6 +4,6 @@ cat('input.txt')
   .exec('tr -cs A-Za-z \'\\n\'')
   .exec('tr A-Z a-z')
   .sort()
-  .exec('uniq -c')
+  .uniq('-c')
   .sort('-rn')
   .head('-n', process.argv[2]);

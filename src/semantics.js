@@ -9,6 +9,17 @@ var reservedWords = [
   'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield',
 ];
 
+function warn(message) {
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    // Assume a Node environment
+    console.warn('Warning:', message);
+  } else {
+    // Assume a browser environment
+    // TODO(nate): provide a more sensible warning UI for the browser
+    console.warn('Warning:', message);
+  }
+}
+
 function testCmdHelper(negate, word1, operator, word2) {
   if (word1) {
     // binary command
@@ -276,31 +287,45 @@ var source2sourceSemantics = {
     var cmd = firstword.sourceString;
     var argList = args.toJS(0);
     var cmdLookup = {
-      cp: [1],
-      rm: [1],
-      mkdir: [1],
-      mv: [1],
-      grep: [1],
-      cd: [0, 1],
-      pwd: [0, 0],
-      ls: [0],
-      find: [1],
-      cat: [0],
-      which: [1, 1],
-      echo: [0],
-      head: [0],
-      pushd: [0, 2],
-      popd: [0, 2],
-      dirs: [0, 1],
-      ln: [2, 3],
-      exit: [0, 1],
-      chmod: [2],
-      touch: [1],
-      sort: [0],
-      set: [1, 1],
-      sed: [1]
+      cp: { opts: 'fnrRLP', arity: [1], },
+      rm: { opts: 'frR', arity: [1], },
+      mkdir: { opts: 'p', arity: [1], },
+      mv: { opts: 'fn', arity: [1], },
+      grep: { opts: 'vl', arity: [1], },
+      cd: { opts: '', arity: [0, 1], }, // no opts
+      pwd: { opts: '', arity: [0, 0], }, // no opts
+      ls: { opts: 'RAdl', arity: [0], },
+      find: { opts: '', arity: [1], }, // no opts
+      cat: { opts: '', arity: [0], }, // no opts
+      which: { opts: '', arity: [1, 1], }, // no opts
+      echo: { opts: 'e', arity: [0], },
+      head: { opts: 'n', arity: [0], },
+      tail: { opts: 'n', arity: [0], },
+      pushd: { opts: 'n', arity: [0, 2], },
+      popd: { opts: 'n', arity: [0, 2], },
+      dirs: { opts: 'c', arity: [0, 1], },
+      ln: { opts: 'sf', arity: [2, 3], },
+      exit: { opts: '', arity: [0, 1], }, // no opts
+      chmod: { opts: 'vcR', arity: [2], },
+      touch: { opts: 'acmdr', arity: [1], },
+      sort: { opts: 'rn', arity: [0], },
+      uniq: { opts: 'icd', arity: [0], },
+      set: { opts: 'evf', arity: [1, 1], },
+      sed: { opts: 'i', arity: [1], },
     };
-    if (cmd in cmdLookup && cmdLookup[cmd][0] <= argList.length && (!cmdLookup[cmd].hasOwnProperty(1) || cmdLookup[cmd][1] >= argList.length)) {
+    var thisCmd = cmdLookup[cmd] || {};
+    var arity = thisCmd.arity;
+    var opts = thisCmd.opts;
+
+    var match = argList[0] && argList[0].match(/^-([a-zA-Z]+)$/);
+    if (match) {
+      match[1].split('').forEach(function (usedFlag) {
+        // if the used flag isn't a ShellJS flag, give a warning
+        if (opts.indexOf(usedFlag) === -1)
+          warn(cmd + ' does not support flag: -' + usedFlag);
+      });
+    }
+    if (arity && arity[0] <= argList.length && (!arity.hasOwnProperty(1) || arity[1] >= argList.length)) {
       if (cmd === 'sed') {
         return convertSed.apply(this, argList);
       } else {
