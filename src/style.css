@@ -1,0 +1,67 @@
+@font-face {
+  font-family: Junction;
+  src: url("../fonts/junction-regular/Junction.otf") format("opentype");
+}
+blockquote {
+  font-style: italic;
+  padding: 10px;
+}
+#hint-box {
+  position: absolute;
+  z-index: 1;
+  right: 10px;
+  padding: 5px;
+  float: right;
+  width: 10%;
+}
+code {
+  font-style: normal;
+  font-weight: bold;
+  background-color: lightgrey;
+  border-radius: 5px;
+  padding: 1px;
+}
+p.hint-text {
+  text-align: left;
+  font-style: italic;
+  font-size: 10pt;
+}
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+html {
+  background: #f2f2f2;
+}
+body, h1, p {
+  text-align: center;
+  font-family: Junction;
+}
+h2 {
+  font-style: italic;
+}
+.CodeMirror {
+  text-align: left;
+  width: 50em;
+  border: solid;
+  border-color: lightgrey;
+}
+#checkbox1 {
+  text-align: center;
+}
+.code-box {
+  height: auto;
+  display: table;
+  width: auto;
+  display: inline-block;
+  margin: 10px;
+}
+.container {
+  height: 100%;
+  float: right;
+  margin-top: 20px;
+  margin-left: 10px;
+}
+button.selector {
+  position: relative;
+}
