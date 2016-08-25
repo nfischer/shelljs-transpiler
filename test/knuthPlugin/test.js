@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('shelljs-plugin-tr');
 require('shelljs/global');
 cat('input.txt')
   .tr('-cs', 'A-Za-z', '\n')

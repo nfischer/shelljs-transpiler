@@ -1,6 +1,6 @@
 {
   "name": "shelljs-transpiler",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Translate bash to shelljs",
   "keywords": [
     "shelljs",

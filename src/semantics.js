@@ -283,13 +283,15 @@ var source2sourceSemantics = {
         cmds.toJS(this.args.indent));
   },
   Shebang: function(_a, _b, _c) {
-    if (this.sourceString)
-      return "#!/usr/bin/env node\n" +
-          (globalInclude.value ? "require('shelljs/global');" : "var shell = require('shelljs');") +
-          "\n";
-    else {
-      return '';
-    }
+    var lines = ['#!/usr/bin/env node'];
+    Object.keys(plugins.exposedPlugins).forEach(function (name) {
+      lines.push("require('shelljs-plugin-" + name + "');");
+    });
+
+    lines.push(globalInclude.value ? "require('shelljs/global');" : "var shell = require('shelljs');");
+
+    lines.push(''); // extra newline
+    return lines.join('\n');
   },
   CmdSequence: function(list) {
     return list.toJS(this.args.indent).join(nl(this.args.indent));
