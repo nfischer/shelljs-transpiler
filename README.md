@@ -68,14 +68,19 @@ The `sh2js` CLI transpiler is still somewhat experimental, but feel free to
 check it out! Usage:
 
 ```
-$ sh2js <shell script input> [JavaScript output]
+$ sh2js [--plugins=<names>] <shell script input> [JavaScript output]
 ```
+
+If you want to take advantage of shelljs plugins in the translated script,
+you're free to do so! Simply use the `--plugins` flag to supply a
+space-separated list of the plugins you want to use.
 
 Ex. usage:
 
 ```bash
 $ sh2js testFile.sh outputFile.js # overwrites outputFile.js
 $ sh2js testFile.sh # writes to stdout
+$ sh2js --plugins="tr open clear" testFile.sh # takes advantage of these plugins
 ```
 
 ## Contributing

@@ -16,8 +16,6 @@ var contents = fs.readFileSync(path.join(__dirname, '..', 'src', 'bash.ohm'));
 var bash = ohm.grammar(contents);
 
 // Load in script, ensure a trailing newline
-if (typeof argv.r === 'string')
-  argv._.unshift(argv.r);
 var inputFile = argv._[0];
 if (!inputFile) {
   console.error('Usage: ' + path.basename(__filename) + ' <shell script input> [javascript file]');
