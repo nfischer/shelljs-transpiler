@@ -14,7 +14,7 @@
   "main": "./bin/transpile.js",
   "scripts": {
     "start": "http-server -o",
-    "posttest": "npm run lint",
+    "posttest": "npm run lint --silent",
     "lint": "jshint .",
     "test": "nyc --reporter=text --reporter=lcov node scripts/runtests.js",
     "deploy": "deploy-gh",

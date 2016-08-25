@@ -25,6 +25,14 @@ if (!inputFile) {
 }
 var script = cat(inputFile).trim() + '\n';
 
+// Load in plugins
+if (argv.plugins) {
+  argv.plugins.split(/ +/).forEach(function (plug) {
+    // Enable each plugin specified
+    semantics.plugins.enable(plug);
+  });
+}
+
 var m = bash.match(script);
 if (m.failed()) {
   console.error('Unable to parse script');

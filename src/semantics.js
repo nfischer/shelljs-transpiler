@@ -118,6 +118,33 @@ function envGuess(str) {
 var globalInclude = {
   value: true
 };
+
+function PluginManager() {
+  this.knownPlugins = {
+    tr: { opts: 'cds', arity: [2, 3], },
+    open: { opts: '', arity: [1], }, // no opts
+    clear: { opts: '', arity: [0], }, // no opts
+  };
+  this.exposedPlugins = {};
+
+  this.enable = function (name) {
+    if (this.knownPlugins[name])
+      this.exposedPlugins[name] = this.knownPlugins[name];
+    else
+      throw new Error('Unknown plugin: ' + name);
+  };
+  this.disable = function (name) {
+    delete this.exposedPlugins[name];
+  };
+  this.reset = function () {
+    this.exposedPlugins = {};
+  };
+  this.use = function (cmds) {
+    Object.assign(cmds, this.exposedPlugins);
+  };
+}
+
+var plugins = new PluginManager();
 var inFunctionBody = false;
 var globalEnvironment = {};
 var allFunctions = {};
@@ -313,6 +340,7 @@ var source2sourceSemantics = {
       set: { opts: 'evf', arity: [1, 1], },
       sed: { opts: 'i', arity: [1], },
     };
+    plugins.use(cmdLookup);
     var thisCmd = cmdLookup[cmd] || {};
     var arity = thisCmd.arity;
     var opts = thisCmd.opts;
@@ -498,4 +526,5 @@ var source2sourceSemantics = {
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports.source2sourceSemantics = source2sourceSemantics;
   module.exports.globalInclude = globalInclude;
+  module.exports.plugins = plugins;
 }
