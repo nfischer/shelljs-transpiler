@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 require('shelljs/global');
 cat('input.txt')
-  .exec('tr -cs A-Za-z \'\\n\'')
-  .exec('tr A-Z a-z')
+  .tr('-cs', 'A-Za-z', '\n')
+  .tr('A-Z', 'a-z')
   .sort()
   .uniq('-c')
   .sort('-rn')

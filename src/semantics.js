@@ -9,6 +9,45 @@ var reservedWords = [
   'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield',
 ];
 
+function warn(message) {
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    // Assume a Node environment
+    console.warn('Warning:', message);
+  } else {
+    // Assume a browser environment
+    // TODO(nate): provide a more sensible warning UI for the browser
+    console.warn('Warning:', message);
+  }
+}
+
+function testCmdHelper(negate, word1, operator, word2) {
+  if (word1) {
+    // binary command
+    var ret = word1.toJS(0) + ' ' + operator.toJS(0) + ' ' + word2.toJS(0);
+    return negate.sourceString ?
+        '!(' + ret + ')' :
+        ret;
+  } else {
+    // unary command
+    var opString = operator.sourceString || operator;
+    var negated = Boolean(negate.sourceString);
+
+    if (opString === '-n') {
+      opString = '-z';
+      negated = !negated;
+    }
+
+    if (opString === '-z') {
+      return negated ?
+        word2.toJS(0) :
+        '!(' + word2.toJS(0) + ')';
+    } else {
+      return (negated ? '!' : '' ) +
+          "test('" + opString + "', " + word2.toJS(0) +")";
+    }
+  }
+}
+
 function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.sourceString)
@@ -79,6 +118,33 @@ function envGuess(str) {
 var globalInclude = {
   value: true
 };
+
+function PluginManager() {
+  this.knownPlugins = {
+    tr: { opts: 'cds', arity: [2, 3], },
+    open: { opts: '', arity: [1], }, // no opts
+    clear: { opts: '', arity: [0], }, // no opts
+  };
+  this.exposedPlugins = {};
+
+  this.enable = function (name) {
+    if (this.knownPlugins[name])
+      this.exposedPlugins[name] = this.knownPlugins[name];
+    else
+      throw new Error('Unknown plugin: ' + name);
+  };
+  this.disable = function (name) {
+    delete this.exposedPlugins[name];
+  };
+  this.reset = function () {
+    this.exposedPlugins = {};
+  };
+  this.use = function (cmds) {
+    Object.assign(cmds, this.exposedPlugins);
+  };
+}
+
+var plugins = new PluginManager();
 var inFunctionBody = false;
 var globalEnvironment = {};
 var allFunctions = {};
@@ -153,31 +219,23 @@ var source2sourceSemantics = {
 
     return 'function ' + idStr + '(..._$args) ' + blockString;
   },
-  TestCmd_unary: function(_, negate, unop, bw) {
-    return negate.sourceString +
-        "test('" + unop.sourceString + "', " + bw.toJS(0) +")";
+  TestCmd_cmd: function(_, insides) {
+    return insides.toJS(0);
   },
-  TestCmd_binary: function(_, negate, bw1, binop, bw2) {
-    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
-    return negate.sourceString ?
-        "!(" + ret + ")" :
-        ret;
+  TestCmd_singleBracket: function(_ob, _spaces, insides, _cb) {
+    return insides.toJS(0);
   },
-  TestCmd_unaryBracket: function(_ob, _2, negate, unop, bw, _cb) {
-    return negate.sourceString +
-        "test('" + unop.sourceString + "', " + bw.toJS(0) +")";
+  TestCmd_doubleBracket: function(_ob, _spaces, insides, _cb) {
+    return insides.toJS(0);
   },
-  TestCmd_binaryBracket: function(_ob, _2, negate, bw1, binop, bw2, _cb) {
-    var ret = bw1.toJS(this.args.indent) + ' ' + binop.toJS(this.args.indent) + ' ' + bw2.toJS(this.args.indent);
-    return negate.sourceString ?
-        "!(" + ret + ")" :
-        ret;
+  TestInsides_unary: function(negate, binop, bw) {
+    return testCmdHelper(negate, null, binop, bw);
   },
-  TestCmd_str: function(_ob, _2, negate, bw, _cb) {
-    var ret = bw.toJS(this.args.indent);
-    return negate.sourceString ?
-        "!(" + ret + ")" :
-        ret;
+  TestInsides_binary: function(negate, bw1, binop, bw2) {
+    return testCmdHelper(negate, bw1, binop, bw2);
+  },
+  TestInsides_str: function(negate, bw) {
+    return testCmdHelper(negate, null, '-n', bw);
   },
   Conditional_test: function(sc) {
     var ret = sc.toJS(0);
@@ -256,31 +314,46 @@ var source2sourceSemantics = {
     var cmd = firstword.sourceString;
     var argList = args.toJS(0);
     var cmdLookup = {
-      cp: [1],
-      rm: [1],
-      mkdir: [1],
-      mv: [1],
-      grep: [1],
-      cd: [0, 1],
-      pwd: [0, 0],
-      ls: [0],
-      find: [1],
-      cat: [0],
-      which: [1, 1],
-      echo: [0],
-      head: [0],
-      pushd: [0, 2],
-      popd: [0, 2],
-      dirs: [0, 1],
-      ln: [2, 3],
-      exit: [0, 1],
-      chmod: [2],
-      touch: [1],
-      sort: [0],
-      set: [1, 1],
-      sed: [1]
+      cp: { opts: 'fnrRLP', arity: [1], },
+      rm: { opts: 'frR', arity: [1], },
+      mkdir: { opts: 'p', arity: [1], },
+      mv: { opts: 'fn', arity: [1], },
+      grep: { opts: 'vl', arity: [1], },
+      cd: { opts: '', arity: [0, 1], }, // no opts
+      pwd: { opts: '', arity: [0, 0], }, // no opts
+      ls: { opts: 'RAdl', arity: [0], },
+      find: { opts: '', arity: [1], }, // no opts
+      cat: { opts: '', arity: [0], }, // no opts
+      which: { opts: '', arity: [1, 1], }, // no opts
+      echo: { opts: 'e', arity: [0], },
+      head: { opts: 'n', arity: [0], },
+      tail: { opts: 'n', arity: [0], },
+      pushd: { opts: 'n', arity: [0, 2], },
+      popd: { opts: 'n', arity: [0, 2], },
+      dirs: { opts: 'c', arity: [0, 1], },
+      ln: { opts: 'sf', arity: [2, 3], },
+      exit: { opts: '', arity: [0, 1], }, // no opts
+      chmod: { opts: 'vcR', arity: [2], },
+      touch: { opts: 'acmdr', arity: [1], },
+      sort: { opts: 'rn', arity: [0], },
+      uniq: { opts: 'icd', arity: [0], },
+      set: { opts: 'evf', arity: [1, 1], },
+      sed: { opts: 'i', arity: [1], },
     };
-    if (cmd in cmdLookup && cmdLookup[cmd][0] <= argList.length && (!cmdLookup[cmd].hasOwnProperty(1) || cmdLookup[cmd][1] >= argList.length)) {
+    plugins.use(cmdLookup);
+    var thisCmd = cmdLookup[cmd] || {};
+    var arity = thisCmd.arity;
+    var opts = thisCmd.opts;
+
+    var match = argList[0] && argList[0].match(/^-([a-zA-Z]+)$/);
+    if (match) {
+      match[1].split('').forEach(function (usedFlag) {
+        // if the used flag isn't a ShellJS flag, give a warning
+        if (opts.indexOf(usedFlag) === -1)
+          warn(cmd + ' does not support flag: -' + usedFlag);
+      });
+    }
+    if (arity && arity[0] <= argList.length && (!arity.hasOwnProperty(1) || arity[1] >= argList.length)) {
       if (cmd === 'sed') {
         return convertSed.apply(this, argList);
       } else {
@@ -340,6 +413,9 @@ var source2sourceSemantics = {
     return ("'" + chars.toJS(0).join('') + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
   },
   barewordChar: function(ch) { return ch.toJS(0); },
+  barewordChar_str: function(mystring) {
+    return "' + " + mystring.toJS(0) + " + '";
+  },
   barewordChar_normal: function(atom) {
     atom = atom.toJS(0);
     if (atom.substr(0, 2) === '$$') { // a hack
@@ -450,4 +526,5 @@ var source2sourceSemantics = {
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports.source2sourceSemantics = source2sourceSemantics;
   module.exports.globalInclude = globalInclude;
+  module.exports.plugins = plugins;
 }

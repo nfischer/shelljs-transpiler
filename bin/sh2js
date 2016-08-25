@@ -25,11 +25,24 @@ if (!inputFile) {
 }
 var script = cat(inputFile).trim() + '\n';
 
+// Load in plugins
+if (argv.plugins) {
+  argv.plugins.split(/ +/).forEach(function (plug) {
+    // Enable each plugin specified
+    semantics.plugins.enable(plug);
+  });
+}
+
 var m = bash.match(script);
 if (m.failed()) {
   console.error('Unable to parse script');
-  console.error(m.message);
-  console.error('Please include this output in a bug report to ' + myPackage.repository.url);
+  try {
+    console.error(m.message); // This line sometimes throws an exception
+    console.error('Please include this output in the bug report');
+  } catch (e) {
+    console.error('Unable to identify parsing failure (please include your full script in the bug report)');
+  }
+  console.error('Please file a bug report at ' + myPackage.repository.url);
   exit(1);
 }
 

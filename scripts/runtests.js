@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* globals cat, exec, set, config, cd, ls, error, echo, exit */
 
 'use strict';
 
@@ -8,18 +7,17 @@ var ohm = require('../lib/ohm/dist/ohm');
 var fs = require('fs');
 var path = require('path');
 var semantics = require('../src/semantics');
-require('shelljs/global');
+var shell = require('shelljs');
 var ohmFile = path.join(__dirname, '..', 'src', 'bash.ohm');
+require('colors');
 
-set('-e');
-config.silent = true;
+shell.set('-e');
+shell.config.silent = true;
 
 var contents = fs.readFileSync(ohmFile);
 var bash = ohm.grammar(contents);
 var s = bash.createSemantics();
-s.addOperation(
-  'toJS(indent)',
-  semantics.source2sourceSemantics);
+s.addOperation('toJS(indent)', semantics.source2sourceSemantics);
 
 var m;
 
@@ -234,34 +232,49 @@ m = bash.match("echo hi |\ncat |\ncat\n");
 assert.ok(m.succeeded());
 assert.equal(s(m).toJS(0), "echo('hi')\n  .cat()\n  .cat();\n");
 
-set('+e');
+shell.set('+e');
 var retStatus = 0;
-cd(path.join(__dirname, '..', 'test'));
-ls().forEach(function (test) {
-  cd(test);
-  if (error())
+shell.cd(path.join(__dirname, '..', 'test'));
+
+var greenCheckmark = '\u2713'.green.bold;
+var redX = '\u2717'.red.bold;
+
+shell.ls().forEach(function (test) {
+  shell.cd(test);
+  if (shell.error())
     /* istanbul ignore next */
-    echo(test + 'is not a directory');
+    shell.echo(test + 'is not a directory');
   /* istanbul ignore next */
   try {
-    m = bash.match(cat(ls('*.sh')[0]).toString());
-    assert.ok(m.succeeded());
-    assert.equal(s(m).toJS(0), cat(ls('*.js')[0]));
+    if (shell.test('-f', 'config.json')) {
+      JSON.parse(shell.cat('config.json').toString())
+        .plugins
+        .forEach(function (name) {
+          semantics.plugins.enable(name);
+      });
+    }
+    m = bash.match(shell.cat(shell.ls('*.sh')[0]).toString());
+    if (m.failed()) {
+      console.error('Unable to parse ' + test);
+      throw new Error('Unable to parse');
+    } else {
+      assert.ok(m.succeeded());
+      assert.equal(s(m).toJS(0), shell.cat(shell.ls('*.js')[0]));
+    }
+    console.log(greenCheckmark + ' ' + test);
   } catch (e) {
     retStatus = 1;
-    echo('test ' + JSON.stringify(test) + ' failed');
-    echo('actual:   ' + JSON.stringify(e.actual));
-    echo('expected: ' + JSON.stringify(e.expected));
+    console.log(redX + ' ' + test);
+    shell.echo('actual:   ' + JSON.stringify(e.actual));
+    shell.echo('expected: ' + JSON.stringify(e.expected));
   }
-  cd('-');
+  semantics.plugins.reset();
+  shell.cd('-');
 });
 
-config.silent = false;
+shell.config.silent = false;
 
 /* istanbul ignore next */
 if (retStatus === 0)
-  echo('All tests passed!');
-else
-  echo('\nSome tests failed');
-
-exit(retStatus);
+  shell.echo('All tests passed!');
+shell.exit(retStatus);
