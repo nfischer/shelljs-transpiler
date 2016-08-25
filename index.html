@@ -102,6 +102,13 @@ s.addOperation(
   source2sourceSemantics);
 
 function loadTranslatedText() {
+  // Load in the plugins that are in use
+  plugins.reset();
+  $('.pluginCheckbox:checked').each(function (_idx, node) {
+    // console.log(node.value);
+    plugins.enable(node.value);
+  });
+
   // Note: must keep `globalInclude` in global namespace for now
   globalInclude.value = document.getElementById('checkbox1').checked
   var script = editor.getValue().trim() + '\n';
@@ -116,6 +123,23 @@ function loadTranslatedText() {
 }
 
 $('document').ready(function() {
+  // Create checkboxes for each plugin
+  var table = document.getElementById('main-table');
+  var row = table.insertRow(1);
+  var mydiv = document.createElement('div');
+  row.appendChild(mydiv);
+  $('<span>Plugins: </span>').appendTo($(mydiv));
+  Object.keys(plugins.knownPlugins).forEach(function (name) {
+    var box = $('<input/>', {
+      class: 'pluginCheckbox',
+      type: 'checkbox',
+      name: name,
+      value: name,
+    }).after(name);
+    box.click(loadTranslatedText);
+    box.appendTo($(mydiv));
+  });
+
   editor.on('change', loadTranslatedText);
   $('#checkbox1').change(loadTranslatedText);
   var timeout;
@@ -155,7 +179,7 @@ README</a>
 <p class="hint-text">Hint:</p>
 <p class="hint-text" id="hint-body"></p>
 </div>
-<table>
+<table id="main-table">
 <tr>
 <td>
 <div class="code-box">
