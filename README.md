@@ -68,12 +68,20 @@ The `sh2js` CLI transpiler is still somewhat experimental, but feel free to
 check it out! Usage:
 
 ```
-$ sh2js [--plugins=<names>] <shell script input> [JavaScript output]
+$ sh2js [options] <shell script input> [JavaScript output]
 ```
 
 If you want to take advantage of shelljs plugins in the translated script,
 you're free to do so! Simply use the `--plugins` flag to supply a
 space-separated list of the plugins you want to use.
+
+### options
+
+| short option | long option | behavior |
+|:---:| --- | --- |
+| `-v` | `--version` | Output version information and quit |
+| `-h` | `--help` | Output help information and quit |
+| N/A  | `--plugins="<names>"` | Use each ShellJS plugin listed in the space-separated list `<names>` |
 
 Ex. usage:
 

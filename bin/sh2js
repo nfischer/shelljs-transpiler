@@ -12,13 +12,26 @@ var myPackage = require('../package.json');
 
 var argv = require('minimist')(process.argv.slice(2));
 
+function usage(error) {
+  var func = error ? console.error.bind(console) : console.log.bind(console);
+  func('Usage: ' + path.basename(__filename) + ' [opts] <shell script input> [javascript file]');
+}
+
+if (argv.version || argv.v) {
+  console.log(myPackage.version);
+  process.exit(0);
+} else if (argv.help || argv.h) {
+  usage();
+  process.exit(0);
+}
+
 var contents = fs.readFileSync(path.join(__dirname, '..', 'src', 'bash.ohm'));
 var bash = ohm.grammar(contents);
 
 // Load in script, ensure a trailing newline
 var inputFile = argv._[0];
 if (!inputFile) {
-  console.error('Usage: ' + path.basename(__filename) + ' <shell script input> [javascript file]');
+  usage();
   process.exit(1);
 }
 var script = cat(inputFile).trim() + '\n';
