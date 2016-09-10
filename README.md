@@ -4,6 +4,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/nfischer/shelljs-transpiler.svg?style=flat-square)](https://codecov.io/gh/nfischer/shelljs-transpiler)
 [![npm version](https://img.shields.io/npm/v/shelljs-transpiler.svg?style=flat-square)](https://www.npmjs.com/package/shelljs-transpiler)
 [![npm downloads](https://img.shields.io/npm/dt/shelljs-transpiler.svg?style=flat-square)](https://www.npmjs.com/package/shelljs-transpiler)
+[![Try online](https://img.shields.io/badge/try_it-online!-yellow.svg?style=flat-square)](https://nfischer.github.io/shelljs-transpiler/)
 
 > *"Say goodbye to those gnarly Bash scripts!"
 > -- @arturadib, [ShellJS
