@@ -59,12 +59,12 @@ if (m.failed()) {
 
 var s = bash.createSemantics();
 s.addOperation(
-  'toJS(indent)',
+  'toJS(indent, ctx)',
   semantics.source2sourceSemantics);
 
 var n = s(m);
 
-var jsResult = n.toJS(0);
+var jsResult = n.toJS(0, {});
 if (argv._[1]) { // write it out to a file
   ShellString(jsResult).to(argv._[1]);
 } else { // write it to stdout
