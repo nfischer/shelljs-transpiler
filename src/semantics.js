@@ -33,10 +33,16 @@ function isGlobString(str){
   return globStringToRegex(str).toString() === "/^" + str + "$/g";
 }
 
+
+var tempCounter = 0;
+function createTempVariable(){
+  return "$tmp"+tempCounter++;
+}
+
 function testCmdHelper(negate, word1, operator, word2) {
   if (word1) {
     // binary command
-    var ret = word1.toJS(0, this.args.ctx) + ' ' + operator.toJS(0, this.args.ctx) + ' ' + word2.toJS(0, this.args.ctx);
+    var ret = word1.toJS(0, {}) + ' ' + operator.toJS(0, {}) + ' ' + word2.toJS(0, {});
     return negate.sourceString ?
         '!(' + ret + ')' :
         ret;
@@ -52,11 +58,11 @@ function testCmdHelper(negate, word1, operator, word2) {
 
     if (opString === '-z') {
       return negated ?
-        word2.toJS(0, this.args.ctx) :
-        '!(' + word2.toJS(0, this.args.ctx) + ')';
+        word2.toJS(0, {}) :
+        '!(' + word2.toJS(0, {}) + ')';
     } else {
       return (negated ? '!' : '' ) +
-          "test('" + opString + "', " + word2.toJS(0, this.args.ctx) +")";
+          "test('" + opString + "', " + word2.toJS(0, {}) +")";
     }
   }
 }
@@ -233,38 +239,28 @@ var source2sourceSemantics = {
     return 'function ' + idStr + '(..._$args) ' + blockString;
   },
   CaseCommand: function(_case, expr, _in, _ws, cases, _ws2, _esac){
-    var varName = "tmp" + Date.now();
+    var varName = createTempVariable();
     var indent = this.args.indent;
 
-    // If we can scan the children to see if there are glob patterns
-    // ahead of time, we can set hasGlob to false and generate cleaner code.
-    var hasGlob = true;
-
-    if (hasGlob){
-      return nl(indent) + "var " + varName + " = " +
-      expr.toJS(0,this.args.ctx) + ";" + nl(indent) +
-      "switch (" + varName + ") {" + nl(indent + 1) +
-      cases.toJS(indent + 1, Object.assign(this.args.ctx,
-        {caseVar:varName})).join(nl(indent + 1)) +
-      nl(indent) + "}";
-    } else {
-      return nl(indent) +
-      "switch (" + expr.toJS(0,this.args.ctx) + ") {" + nl(indent + 1) +
-      cases.toJS(indent + 1, this.args.ctx).join(nl(indent + 1)) +
-      nl(indent) + "}";
-    }
+    return nl(indent) + "var " + varName + " = " +
+    expr.toJS(0,this.args.ctx) + ";" + nl(indent) +
+    "switch (" + varName + ") {" + nl(indent + 1) +
+    cases.toJS(indent + 1, Object.assign(this.args.ctx,
+      {caseVar:varName})).join(nl(indent + 1)) +
+    nl(indent) + "}";
   },
   CaseCase: function(opts, _par, _ws, cmds, _ws2, _semisemi, comment){
     var varName = this.args.ctx.caseVar;
-    var comment = comment.toJS(this.args.indent, this.args.ctx);
+    var commentStr = comment.toJS(this.args.indent, this.args.ctx);
     return opts.toJS(0, this.args.ctx)
-        .map(s => s.substr(1, s.length - 2))
-        .map(s => isGlobString(s) ? ("case " + s + ":")
-          : ("case (" + globStringToRegex(s) + ".test(" + varName + ") ? " + varName + " : NaN) :"))
-        .join(nl(this.args.indent)) +
+      .map(function (s) { 
+		var strippedStr = s.substr(1, s.length - 2);
+		return isGlobString(strippedStr) ? ("case " + s + ":")
+          : ("case (" + globStringToRegex(strippedStr) + ".test(" + varName + ") ? " + varName + " : NaN) :");
+      }).join(nl(this.args.indent)) +
       nl(this.args.indent + 1) +
       cmds.toJS(this.args.indent, this.args.ctx).join(nl(this.args.indent + 1)) +
-      nl(this.args.indent + 1) + "break;" + (comment.length > 0 ? " " + comment : "");
+      nl(this.args.indent + 1) + "break;" + (commentStr.length > 0 ? " " + commentStr : "");
   },
   TestCmd_cmd: function(_, insides) {
     return insides.toJS(0, this.args.ctx);
