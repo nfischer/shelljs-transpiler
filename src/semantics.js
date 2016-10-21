@@ -20,10 +20,29 @@ function warn(message) {
   }
 }
 
+function globStringToRegex(str) {
+    function preg_quote (str, delimiter) {
+        // http://stackoverflow.com/a/13818704
+        return (str + '').replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + (delimiter || '') + '-]', 'g'), '\\$&');
+    }
+
+    return new RegExp("^" + preg_quote(str).replace(/\\\*/g, '.*').replace(/\\\?/g, '.') + "$", 'g');
+}
+
+function isGlobString(str){
+  return globStringToRegex(str).toString() === "/^" + str + "$/g";
+}
+
+
+var tempCounter = 0;
+function createTempVariable(){
+  return "$tmp"+tempCounter++;
+}
+
 function testCmdHelper(negate, word1, operator, word2) {
   if (word1) {
     // binary command
-    var ret = word1.toJS(0) + ' ' + operator.toJS(0) + ' ' + word2.toJS(0);
+    var ret = word1.toJS(0, {}) + ' ' + operator.toJS(0, {}) + ' ' + word2.toJS(0, {});
     return negate.sourceString ?
         '!(' + ret + ')' :
         ret;
@@ -39,11 +58,11 @@ function testCmdHelper(negate, word1, operator, word2) {
 
     if (opString === '-z') {
       return negated ?
-        word2.toJS(0) :
-        '!(' + word2.toJS(0) + ')';
+        word2.toJS(0, {}) :
+        '!(' + word2.toJS(0, {}) + ')';
     } else {
       return (negated ? '!' : '' ) +
-          "test('" + opString + "', " + word2.toJS(0) +")";
+          "test('" + opString + "', " + word2.toJS(0, {}) +")";
     }
   }
 }
@@ -51,9 +70,9 @@ function testCmdHelper(negate, word1, operator, word2) {
 function cmd_helper(opts, args) {
   var params = [];
   if (opts && opts.sourceString)
-    params.push(opts.toJS(0));
+    params.push(opts.toJS(0, this.args.ctx));
   if (args && args.sourceString) {
-    var js_args = args.toJS(0);
+    var js_args = args.toJS(0, this.args.ctx);
     if (typeof js_args === 'string') {
       params.push(js_args);
     } else {
@@ -160,73 +179,97 @@ var semicolonCmdNames = [
 var source2sourceSemantics = {
   Cmd: function(e) {
     return (
-      this.sourceString && e.toJS(this.args.indent) +
+      this.sourceString && e.toJS(this.args.indent, this.args.ctx) +
       (semicolonCmdNames.indexOf(e.ctorName) > -1 ? ';' : '')
     );
   },
   IfCommand: function(ic, eit, elc, ef) {
-    return ic.toJS(this.args.indent) +
-      eit.toJS(this.args.indent) +
-      elc.toJS(this.args.indent) +
-      ef.toJS(this.args.indent);
+    return ic.toJS(this.args.indent, this.args.ctx) +
+      eit.toJS(this.args.indent, this.args.ctx) +
+      elc.toJS(this.args.indent, this.args.ctx) +
+      ef.toJS(this.args.indent, this.args.ctx);
   },
   IfCase: function(_if, _s, cond, _sc, _then, _s2, cmds) {
-    return 'if (' + cond.toJS(this.args.indent) + ') {' + nl(this.args.indent+1) +
-        cmds.toJS(this.args.indent+1);
+    return 'if (' + cond.toJS(this.args.indent, this.args.ctx) + ') {' + nl(this.args.indent+1) +
+        cmds.toJS(this.args.indent+1, this.args.ctx);
   },
   ElseIfThen: function(_sc1, _ei, _s, cond, _sc2, _then, _s2, cmd) {
-    return nl(this.args.indent) + '} else if (' + cond.toJS(this.args.indent) +
-        ') {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent+1);
+    return nl(this.args.indent) + '} else if (' + cond.toJS(this.args.indent, this.args.ctx) +
+        ') {' + nl(this.args.indent+1) + cmd.toJS(this.args.indent+1, this.args.ctx);
   },
   ElseCase: function(_sc, _else, _space, cmd) {
     return nl(this.args.indent) + '} else {' + nl(this.args.indent+1) +
-        cmd.toJS(this.args.indent+1);
+        cmd.toJS(this.args.indent+1, this.args.ctx);
   },
   EndIf: function(_sc, _fi) {
     return nl(this.args.indent) + '}';
   },
-  ForCommand: function(f) { return f.toJS(this.args.indent); },
+  ForCommand: function(f) { return f.toJS(this.args.indent, this.args.ctx); },
   ForCommand_c_style: function(_for, _op, ctrlstruct, _cp, _sc3, _do, _s, cmd, done) {
-    return 'for (' + ctrlstruct.toJS(0) + ') {' +
-        nl(this.args.indent+1) + cmd.toJS(this.args.indent+1) +
+    return 'for (' + ctrlstruct.toJS(0, this.args.ctx) + ') {' +
+        nl(this.args.indent+1) + cmd.toJS(this.args.indent+1, this.args.ctx) +
         nl(this.args.indent) + '}';
   },
   ControlStruct: function(assign, _sc1, id, binop, val, _sc2, update) {
-    return assign.toJS(0) + ';' + id.sourceString + binop.toJS(0) + val.toJS(0) +
+    return assign.toJS(0, this.args.ctx) + ';' + id.sourceString + binop.toJS(0, this.args.ctx) + val.toJS(0, this.args.ctx) +
       ';' + update.sourceString;
   },
   ForCommand_for_each: function(_for, id, _in, call, _sc, _do, _s, cmd2, done) {
-    var mycall = call.toJS(this.args.indent).replace(/\.replace\(.*\)/, '');
+    var mycall = call.toJS(this.args.indent, this.args.ctx).replace(/\.replace\(.*\)/, '');
     return mycall + '.forEach(function (' + id.sourceString + ') {' +
-        nl(this.args.indent+1) + cmd2.toJS(this.args.indent+1) +
+        nl(this.args.indent+1) + cmd2.toJS(this.args.indent+1, this.args.ctx) +
         nl(this.args.indent) + '});';
   },
   WhileCommand: function(_w, _s, cond, _sc, _do, _s2, cmd, done) {
-    return 'while (' + cond.toJS(this.args.indent) + ') {' +
-        nl(this.args.indent+1) + cmd.toJS(this.args.indent+1) +
-        done.toJS(this.args.indent);
+    return 'while (' + cond.toJS(this.args.indent, this.args.ctx) + ') {' +
+        nl(this.args.indent+1) + cmd.toJS(this.args.indent+1, this.args.ctx) +
+        done.toJS(this.args.indent, this.args.ctx);
   },
   Done: function(_sc, _) {
     return nl(this.args.indent) + '}';
   },
   FunctionDecl: function(_fun, _sp1, id, _paren, _sp2, block) {
-    var idStr = id.toJS(0);
+    var idStr = id.toJS(0, this.args.ctx);
     allFunctions[idStr] = true;
 
     inFunctionBody = true;
-    var blockString = block.toJS(this.args.indent);
+    var blockString = block.toJS(this.args.indent, this.args.ctx);
     inFunctionBody = false;
 
     return 'function ' + idStr + '(..._$args) ' + blockString;
   },
+  CaseCommand: function(_case, expr, _in, _ws, cases, _ws2, _esac){
+    var varName = createTempVariable();
+    var indent = this.args.indent;
+
+    return nl(indent) + "var " + varName + " = " +
+    expr.toJS(0,this.args.ctx) + ";" + nl(indent) +
+    "switch (" + varName + ") {" + nl(indent + 1) +
+    cases.toJS(indent + 1, Object.assign(this.args.ctx,
+      {caseVar:varName})).join(nl(indent + 1)) +
+    nl(indent) + "}";
+  },
+  CaseCase: function(opts, _par, _ws, cmds, _ws2, _semisemi, comment){
+    var varName = this.args.ctx.caseVar;
+    var commentStr = comment.toJS(this.args.indent, this.args.ctx);
+    return opts.toJS(0, this.args.ctx)
+      .map(function (s) { 
+		var strippedStr = s.substr(1, s.length - 2);
+		return isGlobString(strippedStr) ? ("case " + s + ":")
+          : ("case (" + globStringToRegex(strippedStr) + ".test(" + varName + ") ? " + varName + " : NaN) :");
+      }).join(nl(this.args.indent)) +
+      nl(this.args.indent + 1) +
+      cmds.toJS(this.args.indent, this.args.ctx).join(nl(this.args.indent + 1)) +
+      nl(this.args.indent + 1) + "break;" + (commentStr.length > 0 ? " " + commentStr : "");
+  },
   TestCmd_cmd: function(_, insides) {
-    return insides.toJS(0);
+    return insides.toJS(0, this.args.ctx);
   },
   TestCmd_singleBracket: function(_ob, _spaces, insides, _cb) {
-    return insides.toJS(0);
+    return insides.toJS(0, this.args.ctx);
   },
   TestCmd_doubleBracket: function(_ob, _spaces, insides, _cb) {
-    return insides.toJS(0);
+    return insides.toJS(0, this.args.ctx);
   },
   TestInsides_unary: function(negate, binop, bw) {
     return testCmdHelper(negate, null, binop, bw);
@@ -238,19 +281,19 @@ var source2sourceSemantics = {
     return testCmdHelper(negate, null, '-n', bw);
   },
   Conditional_test: function(sc) {
-    var ret = sc.toJS(0);
+    var ret = sc.toJS(0, this.args.ctx);
     if (!globalInclude.value && ret.indexOf('test') > -1)
       ret = ret.replace('test(', 'shell.test(');
     return ret;
   },
   Conditional_cmd: function(sc) {
-    return sc.toJS(0) + '.code === 0';
+    return sc.toJS(0, this.args.ctx) + '.code === 0';
   },
   CodeBlock: function(_b1, s1, commandSequence, _s2, _b2) {
     var spaceIc = s1.sourceString;
     return ind(this.args.indent) + '{' +
         (spaceIc && (spaceIc + ind(this.args.indent+1))) +
-        commandSequence.toJS(this.args.indent+1).replace(/ *$/, '') + '}';
+        commandSequence.toJS(this.args.indent+1, this.args.ctx).replace(/ *$/, '') + '}';
   },
   BinaryOp: function(op) {
     var opTable = {
@@ -278,9 +321,9 @@ var source2sourceSemantics = {
 
     return (this.sourceString.match(/^(\s)*$/) ?
           '' :
-          shebang.toJS(this.args.indent) +
+          shebang.toJS(this.args.indent, this.args.ctx) +
         space.sourceString +
-        cmds.toJS(this.args.indent));
+        cmds.toJS(this.args.indent, this.args.ctx));
   },
   Shebang: function(_a, _b, _c) {
     var lines = ['#!/usr/bin/env node'];
@@ -294,27 +337,27 @@ var source2sourceSemantics = {
     return lines.join('\n');
   },
   CmdSequence: function(list) {
-    return list.toJS(this.args.indent).join(nl(this.args.indent));
+    return list.toJS(this.args.indent, this.args.ctx).join(nl(this.args.indent));
   },
   PipeCmd: function(c1, _, spaces, c2) {
     var newlines = spaces.sourceString.replace(/[^\n]/g, '');
-    return c1.toJS(this.args.indent) +
+    return c1.toJS(this.args.indent, this.args.ctx) +
         (newlines ? newlines + ind(this.args.indent+1) : '') +
         '.' +
-        c2.toJS(0).replace(/^shell\./, '');
+        c2.toJS(0, this.args.ctx).replace(/^shell\./, '');
   },
   SimpleCmd: function(scb, redirects, ampersand) {
-    var ret = scb.toJS(this.args.indent) +
-        redirects.toJS(this.args.indent).join('');
+    var ret = scb.toJS(this.args.indent, this.args.ctx) +
+        redirects.toJS(this.args.indent, this.args.ctx).join('');
     if (ampersand.sourceString)
       ret = ret.replace(')', ', {async: true})');
     if (!globalInclude.value) ret = 'shell.' + ret;
     return ret;
   },
-  SimpleCmdBase: function(scb) { return scb.toJS(this.args.indent); },
+  SimpleCmdBase: function(scb) { return scb.toJS(this.args.indent, this.args.ctx); },
   SimpleCmdBase_std: function(firstword, args) {
     var cmd = firstword.sourceString;
-    var argList = args.toJS(0);
+    var argList = args.toJS(0, this.args.ctx);
     var cmdLookup = {
       cp: { opts: 'fnrRLP', arity: [1], },
       rm: { opts: 'frR', arity: [1], },
@@ -374,28 +417,28 @@ var source2sourceSemantics = {
   },
   Redirect: function(arrow, bw) {
     return (arrow.sourceString.match('>>') ? '.toEnd(' : '.to(') +
-        bw.toJS(0) + ')';
+        bw.toJS(0, this.args.ctx) + ')';
   },
   CmdWithComment: function(cmd, comment) {
-    return cmd.toJS(this.args.indent) + '; ' + comment.toJS(this.args.indent);
+    return cmd.toJS(this.args.indent, this.args.ctx) + '; ' + comment.toJS(this.args.indent, this.args.ctx);
   },
   // TODO(nate): make this preserve leading whitespace
   comment: function(leadingWs, _, msg) { return leadingWs.sourceString + '//' + msg.sourceString; },
   Bashword: function(val) {
-    return val.toJS(0);
+    return val.toJS(0, this.args.ctx);
   },
   ArrayLiteral: function(_op, _sp1, bws, _sp2, _cp) {
-    return '[' + bws.toJS(0).join(', ') + ']';
+    return '[' + bws.toJS(0, this.args.ctx).join(', ') + ']';
   },
-  reference: function(r) { return r.toJS(0); },
+  reference: function(r) { return r.toJS(0, this.args.ctx); },
   reference_simple: function(_, id) {
-    return '$$' + envGuess(id.toJS(0));
+    return '$$' + envGuess(id.toJS(0, this.args.ctx));
   },
   reference_wrapped: function(_, id, _2) {
-    return '$$' + envGuess(id.toJS(0));
+    return '$$' + envGuess(id.toJS(0, this.args.ctx));
   },
   reference_substr: function(_ob, id, _col, dig, _col2, dig2, _cb) {
-    return '$$' + id.toJS(0) + '.substr(' + dig.sourceString +
+    return '$$' + id.toJS(0, this.args.ctx) + '.substr(' + dig.sourceString +
         (dig2.sourceString ? ', ' + dig2.sourceString : '') +
         ')';
   },
@@ -403,23 +446,23 @@ var source2sourceSemantics = {
     var patStr = _sl1.sourceString === "//" ?
         new RegExp(pat.sourceString, 'g').toString() :
         JSON.stringify(pat.sourceString);
-    return '$$' + id.toJS(0) + '.replace(' +
+    return '$$' + id.toJS(0, this.args.ctx) + '.replace(' +
         patStr + ', ' +
         JSON.stringify((sub.sourceString) || '') + ')';
   },
   reference_length: function(_ob, id, _cb) {
-    return '$$' + id.toJS(0) + '.length';
+    return '$$' + id.toJS(0, this.args.ctx) + '.length';
   },
   notDoubleQuote_escape: function(_, _2) { return this.sourceString; },
   bareWord: function(chars) {
-    return ("'" + chars.toJS(0).join('') + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
+    return ("'" + chars.toJS(0, this.args.ctx).join('') + "'").replace(/^'' \+ /g, '').replace(/ \+ ''/g, '');
   },
-  barewordChar: function(ch) { return ch.toJS(0); },
+  barewordChar: function(ch) { return ch.toJS(0, this.args.ctx); },
   barewordChar_str: function(mystring) {
-    return "' + " + mystring.toJS(0) + " + '";
+    return "' + " + mystring.toJS(0, this.args.ctx) + " + '";
   },
   barewordChar_normal: function(atom) {
-    atom = atom.toJS(0);
+    atom = atom.toJS(0, this.args.ctx);
     if (atom.substr(0, 2) === '$$') { // a hack
       // This is a variable
       return "' + " + atom.slice(2) + " + '";
@@ -429,15 +472,15 @@ var source2sourceSemantics = {
     }
   },
   barewordChar_escape: function(_, c) {
-    return c.toJS(0);
+    return c.toJS(0, this.args.ctx);
   },
-  stringLiteral: function(string) { return string.toJS(this.args.indent); },
+  stringLiteral: function(string) { return string.toJS(this.args.indent, this.args.ctx); },
   singleString: function(_sq, val, _eq) {
     return "'" + val.sourceString.replace(/\n/g, '\\n') + "'";
   },
   doubleString: function(_sq, val, _eq) {
     var ret = '';
-    val.toJS(0).forEach(function (atom) {
+    val.toJS(0, this.args.ctx).forEach(function (atom) {
       if (atom.substr(0, 2) === '$$') { // a hack
         // This is a variable
         ret += "' + " + atom.slice(2) + " + '";
@@ -472,20 +515,20 @@ var source2sourceSemantics = {
     return ret;
   },
   Call: function(_s, cmd, _e) {
-    return cmd.toJS(0).replace(/;$/, '') + ".replace(/\\n+$/, '')";
+    return cmd.toJS(0, this.args.ctx).replace(/;$/, '') + ".replace(/\\n+$/, '')";
   },
-  arrayReference: function(_s, arrId, _e) { return arrId.toJS(0); },
-  arrayLength: function(_s, arrId, _e) { return arrId.toJS(0) + '.length'; },
+  arrayReference: function(_s, arrId, _e) { return arrId.toJS(0, this.args.ctx); },
+  arrayLength: function(_s, arrId, _e) { return arrId.toJS(0, this.args.ctx) + '.length'; },
   Export: function(e) {
-    return e.toJS(this.args.indent);
+    return e.toJS(this.args.indent, this.args.ctx);
   },
   Export_bare: function(_, id) {
-    id_str = id.toJS(0);
+    id_str = id.toJS(0, this.args.ctx);
     return (id_str.match(/env\./) ? id_str : env(id_str)) +
         ' = ' + id_str;
   },
   Export_assign: function(_, assign) {
-    assign_str = assign.toJS(0).replace(/^(var|const) /, '');
+    assign_str = assign.toJS(0, this.args.ctx).replace(/^(var|const) /, '');
     var id = assign_str.match(/^([^ ]+) =/)[1];
     return (id.match(/env\./) ? '' : env(id) + ' = ') +
         assign_str;
@@ -494,7 +537,7 @@ var source2sourceSemantics = {
     // Check if this variable is assigned already. If not, stick it in the
     // environment
     var ret;
-    var varName = name.toJS(0).trim();
+    var varName = name.toJS(0, this.args.ctx).trim();
     if (varName.match(/^(shell.)?env.|^process.argv.|^_\$args./) || globalEnvironment[varName]) {
       ret = '';
     } else {
@@ -502,7 +545,7 @@ var source2sourceSemantics = {
       globalEnvironment[varName] = true; // mark it as declared
     }
 
-    var myexpr = expr.toJS(this.args.indent).toString();
+    var myexpr = expr.toJS(this.args.indent, this.args.ctx).toString();
     var ic = expr.sourceString;
     ret += varName + " = " + (myexpr || "''");
     return ret;
@@ -511,7 +554,7 @@ var source2sourceSemantics = {
     return this.sourceString;
   },
   NonemptyListOf: function(x, sep, xs) {
-    return [x.toJS(this.args.indent)].concat(xs.toJS(this.args.indent));
+    return [x.toJS(this.args.indent, this.args.ctx)].concat(xs.toJS(this.args.indent, this.args.ctx));
   },
   EmptyListOf: function() {
     return [];

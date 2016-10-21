@@ -28,7 +28,7 @@ var s = bash.createSemantics();
 var errMessage;
 var warned = false;
 s.addOperation(
-  'toJS(indent)',
+  'toJS(indent, ctx)',
   source2sourceSemantics);
 
 function loadTranslatedText() {
@@ -46,7 +46,7 @@ function loadTranslatedText() {
   warned = false;
   if (!errMessage) {
     var n = s(m);
-    var replacementText = n.toJS(0).trimRight();
+    var replacementText = n.toJS(0, {}).trimRight();
     jscode.setValue(replacementText);
   }
 }

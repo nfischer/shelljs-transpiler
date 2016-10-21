@@ -15,6 +15,7 @@ Bash {
       | Export
       | Assignment
       | SimpleCmd
+      | CaseCommand
       | ("" ~keyword)
 
   IfCommand
@@ -51,6 +52,12 @@ Bash {
 
   CodeBlock
       = "{" allwhitespace* CmdSequence allwhitespace* "}"
+
+  CaseCommand
+      = "case" Bashword "in" #(allwhitespace+) NonemptyListOf<CaseCase, #(allwhitespace+)> #(allwhitespace+) "esac"
+
+  CaseCase
+      = NonemptyListOf<Bashword, "|"> ")" #(allwhitespace*) ListOf<Cmd, (~";;" semicolon)> #(allwhitespace*) (";;" | ";&") comment?
 
   BinaryOp (Binary infix operator)
       = "=="  | "=" | "-eq"
@@ -143,7 +150,7 @@ Bash {
       = keywordRoot ~alnum
 
   keywordRoot
-      = "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do" | "function"
+      = "case" | "esac" | "if" | "then" | "else" | "elif" | "fi" | "for" | "done" | "do" | "function"
 
   stringLiteral
       = singleString
