@@ -51,5 +51,8 @@
   "dependencies": {
     "minimist": "^1.2.0",
     "shelljs": "^0.7.0"
+  },
+  "engines": {
+    "node": ">=10"
   }
 }
