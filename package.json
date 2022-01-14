@@ -23,6 +23,9 @@
     "release:minor": "shelljs-release minor",
     "release:patch": "shelljs-release patch"
   },
+  "nyc": {
+    "include": ["scripts/", "src/"]
+  },
   "author": "Nate Fischer <ntfschr@gmail.com>",
   "repository": {
     "type": "git",
