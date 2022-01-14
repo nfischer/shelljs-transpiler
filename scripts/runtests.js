@@ -3,7 +3,14 @@
 'use strict';
 
 var assert = require('assert');
-var ohm = require('../lib/ohm/dist/ohm');
+var ohm;
+try {
+  ohm = require('../lib/ohm/dist/ohm');
+} catch (e) {
+  /* istanbul ignore next */
+  throw new Error('Unable to import lib/ohm/dist/ohm; maybe you need to run ' +
+      'git submodule --init --recursive');
+}
 var fs = require('fs');
 var path = require('path');
 var semantics = require('../src/semantics');
@@ -241,9 +248,10 @@ var redX = '\u2717'.red.bold;
 
 shell.ls().forEach(function (test) {
   shell.cd(test);
-  if (shell.error())
-    /* istanbul ignore next */
+  /* istanbul ignore next */
+  if (shell.error()) {
     shell.echo(test + 'is not a directory');
+  }
   /* istanbul ignore next */
   try {
     if (shell.test('-f', 'config.json')) {
