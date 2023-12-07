@@ -1,6 +1,6 @@
 # shelljs-transpiler
 
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fnfischer%2Fshelljs-transpiler%2Fbadge%3Fref%3Dmain&style=flat-square)](https://actions-badge.atrox.dev/nfischer/shelljs-transpiler/goto?ref=main)
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/nfischer/shelljs-transpiler/main.yml?style=flat-square&logo=github)](https://github.com/nfischer/shelljs-transpiler/actions/workflows/main.yml)
 [![Codecov](https://img.shields.io/codecov/c/github/nfischer/shelljs-transpiler.svg?style=flat-square)](https://codecov.io/gh/nfischer/shelljs-transpiler)
 [![npm version](https://img.shields.io/npm/v/shelljs-transpiler.svg?style=flat-square)](https://www.npmjs.com/package/shelljs-transpiler)
 [![npm downloads](https://img.shields.io/npm/dt/shelljs-transpiler.svg?style=flat-square)](https://www.npmjs.com/package/shelljs-transpiler)
