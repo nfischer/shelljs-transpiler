@@ -2,6 +2,13 @@
   font-family: Junction;
   src: url("../fonts/junction-regular/Junction.otf") format("opentype");
 }
+body{
+  background-image: url("../img/background.jpg");
+  background-size: cover;
+}
+.background{
+  background-color: rgba(211, 192, 192, 0.48);
+}
 blockquote {
   font-style: italic;
   padding: 10px;
