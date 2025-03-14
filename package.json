@@ -24,7 +24,10 @@
     "release:patch": "shelljs-release patch"
   },
   "nyc": {
-    "include": ["scripts/", "src/"]
+    "include": [
+      "scripts/",
+      "src/"
+    ]
   },
   "author": "Nate Fischer <ntfschr@gmail.com>",
   "repository": {
@@ -44,15 +47,15 @@
     "fonts"
   ],
   "devDependencies": {
-    "colors": "1.4.0",
-    "deploy-gh": "^0.2.1",
-    "http-server": "^13.1.0",
-    "jshint": "^2.13.3",
-    "nyc": "^15.1.0",
+    "chalk": "^4.1.2",
+    "deploy-gh": "^0.3.0",
+    "http-server": "^14.1.1",
+    "jshint": "^2.13.6",
+    "nyc": "^17.1.0",
     "shelljs-release": "^0.5.2"
   },
   "dependencies": {
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.8",
     "shelljs": "^0.9.1"
   },
   "engines": {
