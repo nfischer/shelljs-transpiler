@@ -16,7 +16,7 @@ var path = require('path');
 var semantics = require('../src/semantics');
 var shell = require('shelljs');
 var ohmFile = path.join(__dirname, '..', 'src', 'bash.ohm');
-require('colors');
+var chalk = require('chalk');
 
 shell.set('-e');
 shell.config.silent = true;
@@ -243,8 +243,8 @@ shell.set('+e');
 var retStatus = 0;
 shell.cd(path.join(__dirname, '..', 'test'));
 
-var greenCheckmark = '\u2713'.green.bold;
-var redX = '\u2717'.red.bold;
+var greenCheckmark = chalk.green.bold('\u2713');
+var redX = chalk.red.bold('\u2717');
 
 shell.ls().forEach(function (test) {
   shell.cd(test);
